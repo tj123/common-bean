@@ -35,14 +35,26 @@ public class BeanUtil {
     public static <B, K, V> B toBean(Map<K, V> map, Class<B> clazz,boolean allFiled) throws BeanConvertException {
         try {
             B target = clazz.newInstance();
-            for (K k : map.keySet()) {
-
+            for (K key : map.keySet()) {
+                ((String)key).toUpperCase();
             }
             for (Method setMethod : clazz.getMethods()) {
-                String setMethodName = setMethod.getName();
-                if (!setMethodName.startsWith("set")) continue;
-                String fieldName = getField(setMethodName);
-                Field field = clazz.getDeclaredField(fieldName);
+                try {
+                    String setMethodName = setMethod.getName();
+                    if (!setMethodName.startsWith("set")) continue;
+                    String fieldName = getField(setMethodName);
+                    Field field = clazz.getDeclaredField(fieldName);
+                    Class<?> fieldClass = field.getType();
+                }catch (Exception e){
+                    if (!allFiled) {
+                        throw e;
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug(setMethod + "错误：", e);
+                        }
+                    }
+                }
+
             }
             return target;
         } catch (Exception e) {
