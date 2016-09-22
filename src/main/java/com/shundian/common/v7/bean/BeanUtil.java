@@ -9,7 +9,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -24,30 +23,44 @@ public class BeanUtil {
      *
      * @param map
      * @param clazz
+     * @param allFiled    转换所有字段
+     *                    true: 当有错误时字段为空
+     *                    false： 当有错误即抛出异常
      * @param <B>
      * @param <K>
      * @param <V>
      * @return
      * @throws BeanConvertException
      */
-    public static <B, K, V> B toBean(Map<K, V> map, Class<B> clazz) throws BeanConvertException {
+    public static <B, K, V> B toBean(Map<K, V> map, Class<B> clazz,boolean allFiled) throws BeanConvertException {
         try {
-            B bean = clazz.newInstance();
-            Iterator<Map.Entry<K, V>> iterator = map.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<K, V> element = iterator.next();
-                String key = String.valueOf(element.getKey());
-                V value = element.getValue();
+            B target = clazz.newInstance();
+            for (K k : map.keySet()) {
 
             }
-            for (Method method : clazz.getMethods()) {
-                String methodName = method.getName();
-                if (!methodName.startsWith("set")) continue;
+            for (Method setMethod : clazz.getMethods()) {
+                String setMethodName = setMethod.getName();
+                if (!setMethodName.startsWith("set")) continue;
+                String fieldName = getField(setMethodName);
+                Field field = clazz.getDeclaredField(fieldName);
             }
-            return bean;
+            return target;
         } catch (Exception e) {
             throw new BeanConvertException(e);
         }
+    }
+
+
+    /**
+     * 对象转为 map 默认包含空字段
+     *
+     * @param bean        对象
+     * @param <B>
+     * @return
+     * @throws BeanConvertException
+     */
+    public static <B> Map toMap(B bean) throws BeanConvertException {
+        return  toMap(bean,true);
     }
 
     /**
@@ -111,7 +124,7 @@ public class BeanUtil {
     }
 
     /**
-     * bean 之间转换 根据方法名转换
+     * bean 之间转换 根据方法名转换 默认转换所有字段
      *
      * @param origin      原始
      * @param targetClass 目标
@@ -121,38 +134,97 @@ public class BeanUtil {
      * @throws BeanConvertException
      */
     public static <O, T> T convert(O origin, Class<T> targetClass) throws BeanConvertException {
+        return convert(origin, targetClass, true);
+    }
+
+    /**
+     * bean 之间转换 根据方法名转换
+     *
+     * @param origin      原始
+     * @param targetClass 目标
+     * @param allFiled    转换所有字段
+     *                    true: 当有错误时字段为空
+     *                    false： 当有错误即抛出异常
+     * @param <O>
+     * @param <T>
+     * @return
+     * @throws BeanConvertException
+     */
+    public static <O, T> T convert(O origin, Class<T> targetClass, boolean allFiled) throws BeanConvertException {
         try {
             T target = targetClass.newInstance();
             Class<?> originClass = origin.getClass();
             for (Method targetSetMethod : targetClass.getMethods()) {
-                String targetMethodName = targetSetMethod.getName();
-                if (!targetMethodName.startsWith("set")) continue;
-                String fieldName = getField(targetMethodName);
-//                Class<?> targetFieldClass = targetSetMethod.getParameterTypes()[0];
-                Field targetField = targetClass.getDeclaredField(fieldName);
-                Class<?> targetFieldClass = targetField.getType();
-                Method originGetMethod = originClass.getMethod(getGetterName(fieldName));
-                Class<?> originFieldClass = originGetMethod.getReturnType();
-                Object originValue = originGetMethod.invoke(origin);
-
-                if(originValue == null) continue;
-                //为 String
-                if (String.class.equals(targetFieldClass)) {
-                    if (!isSuperClass(Date.class, originFieldClass)) {
-                        targetSetMethod.invoke(target, Util.stringValue(originValue));
-                    } else {
-                        DatePattern datePatternAnnotation = targetField.getAnnotation(DatePattern.class);
+                try {
+                    String targetMethodName = targetSetMethod.getName();
+                    if (!targetMethodName.startsWith("set")) continue;
+                    String fieldName = getField(targetMethodName);
+                    //                Class<?> targetFieldClass = targetSetMethod.getParameterTypes()[0];
+                    Field targetField = targetClass.getDeclaredField(fieldName);
+                    Class<?> targetFieldClass = targetField.getType();
+                    Method originGetMethod = originClass.getMethod(getGetterName(fieldName));
+                    Class<?> originFieldClass = originGetMethod.getReturnType();
+                    Field originField = originClass.getDeclaredField(fieldName);
+                    Object originValue = originGetMethod.invoke(origin);
+                    if (originValue == null) continue;
+                    //为 String
+                    if (String.class.equals(targetFieldClass)) {
+                        if (!isSuperClass(Date.class, originFieldClass)) {
+                            targetSetMethod.invoke(target, Util.stringValue(originValue));
+                        } else {
+                            DatePattern datePatternAnnotation = targetField.getAnnotation(DatePattern.class);
+                            String datePattern = BeanConfig.DEFAULT_DATE_PATTEN;
+                            if (datePatternAnnotation != null) {
+                                datePattern = datePatternAnnotation.value();
+                            }
+                            targetSetMethod.invoke(target, Util.dateToString((Date) originValue, datePattern));
+                        }
+                    } else if (isSuperClass(Date.class, targetFieldClass)) {
+                        // 为 Date 类型或者 Date的子类
+                        DatePattern datePatternAnnotation = originField.getAnnotation(DatePattern.class);
                         String datePattern = BeanConfig.DEFAULT_DATE_PATTEN;
                         if (datePatternAnnotation != null) {
                             datePattern = datePatternAnnotation.value();
                         }
-
+                        if (Date.class.equals(targetFieldClass)) {
+                            targetSetMethod.invoke(target, Util.stringToDate(Util.stringValue(originValue), datePattern));
+                        } else if (isInterfaceOf(DateConvert.class, targetFieldClass)) {
+                            DateConvert targetValue = (DateConvert) targetFieldClass.newInstance();
+                            targetValue.setDate(Util.stringToDate(Util.stringValue(originValue), datePattern));
+                            targetSetMethod.invoke(target, targetValue);
+                        } else {
+                            if (log.isDebugEnabled()) {
+                                log.debug("必须实现 DateConvert 接口,以完成转换：", new BeanConvertException());
+                            }
+                        }
+                    } else if (targetFieldClass.isEnum()) {
+                        //为 枚举
+                        targetSetMethod.invoke(target, toEnum((Class<? extends Enum<?>>) targetFieldClass, originValue));
+                    } else if (Double.class.equals(targetFieldClass)) {
+                        //为 Double
+                        targetSetMethod.invoke(target, Double.valueOf(Util.stringValue(originValue)));
+                    } else if (Integer.class.equals(targetFieldClass)) {
+                        //为 Integer
+                        targetSetMethod.invoke(target, Integer.valueOf(Util.stringValue(originValue)));
+                    } else if (Float.class.equals(targetFieldClass)) {
+                        //为 Float
+                        targetSetMethod.invoke(target, Float.valueOf(Util.stringValue(originValue)));
+                    } else if (Short.class.equals(targetFieldClass)) {
+                        //为 Short
+                        targetSetMethod.invoke(target, Short.valueOf(Util.stringValue(originValue)));
+                    } else if (Long.class.equals(targetFieldClass)) {
+                        //为 Long
+                        targetSetMethod.invoke(target, Long.valueOf(Util.stringValue(originValue)));
+                    }
+                } catch (Exception e) {
+                    if (!allFiled) {
+                        throw e;
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug(targetSetMethod + "错误：", e);
+                        }
                     }
                 }
-                if (isSuperClass(Date.class, targetClass)) {
-
-                }
-
             }
             return target;
         } catch (Exception e) {
@@ -209,7 +281,7 @@ public class BeanUtil {
      * 判断是否完成了接口
      *
      * @param originClass
-     * @param interfaceClass
+     * @param interfaceClass 接口
      * @return
      */
     public static boolean isInterfaceOf(Class<?> interfaceClass, Class<?> originClass) {
@@ -219,12 +291,33 @@ public class BeanUtil {
     /**
      * 判断是否为子类
      *
-     * @param subClass
-     * @param supperClass
+     * @param subClass    子类
+     * @param supperClass 父类
      * @return
      */
     public static boolean isSubClass(Class<?> subClass, Class<?> supperClass) {
         return !isSuperClass(subClass, supperClass);
+    }
+
+    /**
+     * 调用  getKey 和 valueOf 两种方法来转换
+     *
+     * @param enumClass
+     * @param value
+     * @param <E>
+     * @param <V>
+     * @return
+     */
+    public static <E extends Enum<E>, V> E toEnum(Class<E> enumClass, V value) throws BeanConvertException {
+        try {
+            return Util.toEnum(enumClass, value);
+        } catch (CannotConvertException e) {
+            try {
+                return Util.enumValue(enumClass, Util.stringValue(value));
+            } catch (CannotConvertException e1) {
+                throw new BeanConvertException(e1);
+            }
+        }
     }
 
 

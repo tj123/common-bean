@@ -84,4 +84,12 @@ class Util {
     public static String dateToString(Date date,String pattern) throws Exception{
         return new SimpleDateFormat(pattern).format(date);
     }
+
+    /**
+     *  日期转换
+     */
+    public static Date stringToDate(String date,String pattern) throws Exception{
+        return new SimpleDateFormat(pattern).parse(date);
+    }
+
 }
