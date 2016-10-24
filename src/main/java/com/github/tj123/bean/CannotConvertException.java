@@ -3,10 +3,13 @@ package com.github.tj123.bean;
 /**
  * Created by TJ on 2016/9/2.
  */
-class CannotConvertException extends Exception{
+class CannotConvertException extends Exception {
 
-    public CannotConvertException(){
+    public CannotConvertException() {
+    }
 
+    public CannotConvertException(String message) {
+        super(message);
     }
 
     public CannotConvertException(Throwable e) {

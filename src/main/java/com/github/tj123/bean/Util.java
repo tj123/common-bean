@@ -57,6 +57,47 @@ class Util {
     }
 
     /**
+     * 如果key为null则返回枚举值
+     * @param envm
+     * @param <E>
+     * @return
+     * @throws CannotConvertException
+     */
+    public static <E extends Enum<E>> String getEnumKeyOrValue(E envm) throws CannotConvertException {
+        String enumValue = null;
+        try {
+            enumValue = Util.stringValue(envm.getClass().getMethod("getKey").invoke(envm));
+        } catch (Exception e) {
+        }
+        if (enumValue == null || enumValue.trim().equals(""))
+            enumValue = Util.stringValue(envm);
+        if (enumValue == null || enumValue.trim().equals(""))
+            throw new CannotConvertException(envm + "转换错误！");
+        return enumValue;
+    }
+
+    /**
+     * 调用  getKey 和 valueOf 两种方法来转换
+     *
+     * @param enumClass
+     * @param value
+     * @param <E>
+     * @param <V>
+     * @return
+     */
+    public static <E extends Enum<E>, V> E toEnumByKeyOrValue(Class<E> enumClass, V value) throws BeanConvertException {
+        try {
+            return Util.toEnum(enumClass, value);
+        } catch (CannotConvertException e) {
+            try {
+                return Util.enumValue(enumClass, Util.stringValue(value));
+            } catch (CannotConvertException e1) {
+                throw new BeanConvertException(e1);
+            }
+        }
+    }
+
+    /**
      * 根据名称来转 枚举
      */
     public static <E extends Enum<E>> E enumValue(Class<E> clazz, String name) throws CannotConvertException {

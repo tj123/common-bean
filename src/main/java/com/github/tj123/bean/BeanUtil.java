@@ -189,27 +189,6 @@ public class BeanUtil {
     }
 
     /**
-     * 调用  getKey 和 valueOf 两种方法来转换
-     *
-     * @param enumClass
-     * @param value
-     * @param <E>
-     * @param <V>
-     * @return
-     */
-    public static <E extends Enum<E>, V> E toEnum(Class<E> enumClass, V value) throws BeanConvertException {
-        try {
-            return Util.toEnum(enumClass, value);
-        } catch (CannotConvertException e) {
-            try {
-                return Util.enumValue(enumClass, Util.stringValue(value));
-            } catch (CannotConvertException e1) {
-                throw new BeanConvertException(e1);
-            }
-        }
-    }
-
-    /**
      * 默认在枚举出错时不报错
      *
      * @param originValue
@@ -261,14 +240,12 @@ public class BeanUtil {
                 targetValue.setDate(Util.stringToDate(Util.stringValue(originValue), datePattern));
                 targetField.set(target, targetValue);
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("必须实现 DateConvert 接口,以完成转换：", new BeanConvertException());
-                }
+                throw new BeanConvertException(targetFieldClass + " 必须实现 DateConvert 接口,以完成转换");
             }
         } else if (targetFieldClass.isEnum()) {
             //为 枚举
             try {
-                Enum value = toEnum((Class<Enum>) targetFieldClass, originValue);
+                Enum value = Util.toEnumByKeyOrValue((Class<Enum>) targetFieldClass, originValue);
                 targetField.set(target, value);
             } catch (Exception e) {
                 if (validEnum)
@@ -293,7 +270,7 @@ public class BeanUtil {
     }
 
     public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target) throws Exception {
-        filedMap(originField, origin, targetField, target, false, false);
+        filedMap(originField, origin, targetField, target, false, false, false);
     }
 
     /**
@@ -305,27 +282,25 @@ public class BeanUtil {
      * @param target
      * @param validEnum   当枚举值不正确时是否报异常
      * @param validDate   日期不正确时是否报异常
+     * @param validNumber 日期不正确时是否报异常
      * @param <O>
      * @param <T>
      */
-    public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target, boolean validEnum, boolean validDate) throws Exception {
+    public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target, boolean validEnum,
+                                       boolean validDate, boolean validNumber) throws Exception {
         originField.setAccessible(true);
         targetField.setAccessible(true);
         Object originValue = originField.get(origin);
         Class<?> originFieldClass = originField.getType();
         Class<?> targetFieldClass = targetField.getType();
-        if (originValue == null) return;
+        //if (originValue == null) return;
         //为 String
         if (String.class.equals(targetFieldClass)) {
-            if (originFieldClass.isEnum()) {
-                String enumValue = null;
-                try {
-                    enumValue = Util.stringValue(originFieldClass.getMethod("getKey").invoke(originValue));
-                } catch (Exception e) {
-                }
-                if (enumValue == null || enumValue.trim().equals(""))
-                    enumValue = Util.stringValue(originValue);
-                targetField.set(target, enumValue);
+            if (originValue == null) return;
+            if(String.class.equals(originFieldClass)){
+                targetField.set(target, originValue);
+            }else if (originFieldClass.isEnum()) {
+                targetField.set(target, Util.getEnumKeyOrValue((Enum) originValue));
             } else if (!isSuperClass(Date.class, originFieldClass)) {
                 targetField.set(target, Util.stringValue(originValue));
             } else {
@@ -338,64 +313,85 @@ public class BeanUtil {
             }
         } else if (isSuperClass(Date.class, targetFieldClass)) {
             // 为 Date 类型或者 Date的子类
+            DefaultCurrent defaultCurrent = targetField.getAnnotation(DefaultCurrent.class);
             DatePattern datePatternAnnotation = originField.getAnnotation(DatePattern.class);
             String datePattern = BeanConfig.DEFAULT_DATE_PATTEN;
             if (datePatternAnnotation != null) {
                 datePattern = datePatternAnnotation.value();
             }
             if (Date.class.equals(targetFieldClass)) {
-                String date = null;
+                if(originValue == null){
+                    if (defaultCurrent != null) {
+                        targetField.set(target, new Date());
+                    }
+                    return;
+                }
+                String dateStr = null;
                 try {
-                    date = Util.stringValue(originValue);
-                    targetField.set(target, Util.stringToDate(date, datePattern));
+                    targetField.set(target, Util.stringToDate(Util.stringValue(originValue), datePattern));
                 } catch (Exception e) {
                     if (validDate) {
                         throw e;
                     } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug("日期：" + date + " 不符合格式：" + datePattern);
+                        if (log.isErrorEnabled()) {
+                            log.error("日期：" + dateStr + " 不符合格式：" + datePattern);
                         }
                     }
-
                 }
             } else if (isInterfaceOf(DateConvert.class, targetFieldClass)) {
                 DateConvert targetValue = (DateConvert) targetFieldClass.newInstance();
+                if(originValue == null){
+                    if (defaultCurrent != null) {
+                        targetValue.setDate(new Date());
+                        targetField.set(target, targetValue);
+                    }
+                    return;
+                }
                 targetValue.setDate(Util.stringToDate(Util.stringValue(originValue), datePattern));
                 targetField.set(target, targetValue);
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("必须实现 DateConvert 接口,以完成转换：", new BeanConvertException());
-                }
+                throw new BeanConvertException(targetFieldClass + " 必须实现 DateConvert 接口,以完成转换");
             }
         } else if (targetFieldClass.isEnum()) {
             //为 枚举
             try {
-                Enum value = toEnum((Class<Enum>) targetFieldClass, originValue);
+                Enum value = Util.toEnumByKeyOrValue((Class<Enum>) targetFieldClass, originValue);
                 targetField.set(target, value);
             } catch (Exception e) {
                 if (validEnum) {
                     throw e;
                 } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("枚举值：" + originValue + " 不符合要求");
+                    if (log.isErrorEnabled()) {
+                        log.error("枚举值：" + originValue + " 不符合要求");
                     }
                 }
             }
-        } else if (Double.class.equals(targetFieldClass)) {
-            //为 Double
-            targetField.set(target, Double.valueOf(Util.stringValue(originValue)));
-        } else if (Integer.class.equals(targetFieldClass)) {
-            //为 Integer
-            targetField.set(target, Integer.valueOf(Util.stringValue(originValue)));
-        } else if (Float.class.equals(targetFieldClass)) {
-            //为 Float
-            targetField.set(target, Float.valueOf(Util.stringValue(originValue)));
-        } else if (Short.class.equals(targetFieldClass)) {
-            //为 Short
-            targetField.set(target, Short.valueOf(Util.stringValue(originValue)));
-        } else if (Long.class.equals(targetFieldClass)) {
-            //为 Long
-            targetField.set(target, Long.valueOf(Util.stringValue(originValue)));
+        } else {
+            try {
+                if (Double.class.equals(targetFieldClass)) {
+                    targetField.set(target, Double.valueOf(Util.stringValue(originValue)));
+                } else if (Integer.class.equals(targetFieldClass)) {
+                    //为 Integer
+                    targetField.set(target, Integer.valueOf(Util.stringValue(originValue)));
+                } else if (Float.class.equals(targetFieldClass)) {
+                    //为 Float
+                    targetField.set(target, Float.valueOf(Util.stringValue(originValue)));
+                } else if (Short.class.equals(targetFieldClass)) {
+                    //为 Short
+                    targetField.set(target, Short.valueOf(Util.stringValue(originValue)));
+                } else if (Long.class.equals(targetFieldClass)) {
+                    //为 Long
+                    targetField.set(target, Long.valueOf(Util.stringValue(originValue)));
+                }
+            } catch (Exception e) {
+                if (validNumber) {
+                    throw e;
+                } else {
+                    if (log.isErrorEnabled()) {
+                        log.error("值错误：" + e.getMessage());
+                    }
+                }
+            }
         }
     }
 

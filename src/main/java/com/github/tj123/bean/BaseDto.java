@@ -25,7 +25,6 @@ public abstract class BaseDto<PO extends BasePo> extends BaseBean implements Dto
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
     }
 
-
     /**
      * 当数据为 null 时 替换为 ""
      *
