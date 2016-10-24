@@ -33,14 +33,11 @@ public class BeanUtil {
     public static <B, K, V> B toBean(Map<K, V> map, Class<B> clazz, boolean allFiled) throws BeanConvertException {
         try {
             B target = clazz.newInstance();
-            for (K key : map.keySet()) {
-                ((String) key).toUpperCase();
-            }
             Field[] fields = clazz.getDeclaredFields();
             for (Field targetField : fields) {
-                if ("serialVersionUID".equals(targetField.getName())) continue;
-                //Field originField = originClass.getDeclaredField(targetField.getName());
-                //filedMap(originField, origin, targetField, target);
+                String targetFieldName = targetField.getName();
+                if ("serialVersionUID".equals(targetFieldName)) continue;
+                filedMap(map.get(targetFieldName), targetField, target);
             }
             return target;
         } catch (Exception e) {
@@ -209,6 +206,58 @@ public class BeanUtil {
             } catch (CannotConvertException e1) {
                 throw new BeanConvertException(e1);
             }
+        }
+    }
+
+    public static <O, T> void filedMap(O originValue, Field targetField, T target) throws Exception {
+        targetField.setAccessible(true);
+        Class<?> originFieldClass = originValue.getClass();
+        Class<?> targetFieldClass = targetField.getType();
+        if (originValue == null) return;
+        //为 String
+        if (String.class.equals(targetFieldClass)) {
+            if (!isSuperClass(Date.class, originFieldClass)) {
+                targetField.set(target, Util.stringValue(originValue));
+            } else {
+                DatePattern datePatternAnnotation = targetField.getAnnotation(DatePattern.class);
+                String datePattern = BeanConfig.DEFAULT_DATE_PATTEN;
+                if (datePatternAnnotation != null) {
+                    datePattern = datePatternAnnotation.value();
+                }
+                targetField.set(target, Util.dateToString((Date) originValue, datePattern));
+            }
+        } else if (isSuperClass(Date.class, targetFieldClass)) {
+            // 为 Date 类型或者 Date的子类
+            String datePattern = BeanConfig.DEFAULT_DATE_PATTEN;
+            if (Date.class.equals(targetFieldClass)) {
+                targetField.set(target, Util.stringToDate(Util.stringValue(originValue), datePattern));
+            } else if (isInterfaceOf(DateConvert.class, targetFieldClass)) {
+                DateConvert targetValue = (DateConvert) targetFieldClass.newInstance();
+                targetValue.setDate(Util.stringToDate(Util.stringValue(originValue), datePattern));
+                targetField.set(target, targetValue);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("必须实现 DateConvert 接口,以完成转换：", new BeanConvertException());
+                }
+            }
+        } else if (targetFieldClass.isEnum()) {
+            //为 枚举
+            //targetField.set(target, toEnum(targetFieldClass, originValue));
+        } else if (Double.class.equals(targetFieldClass)) {
+            //为 Double
+            targetField.set(target, Double.valueOf(Util.stringValue(originValue)));
+        } else if (Integer.class.equals(targetFieldClass)) {
+            //为 Integer
+            targetField.set(target, Integer.valueOf(Util.stringValue(originValue)));
+        } else if (Float.class.equals(targetFieldClass)) {
+            //为 Float
+            targetField.set(target, Float.valueOf(Util.stringValue(originValue)));
+        } else if (Short.class.equals(targetFieldClass)) {
+            //为 Short
+            targetField.set(target, Short.valueOf(Util.stringValue(originValue)));
+        } else if (Long.class.equals(targetFieldClass)) {
+            //为 Long
+            targetField.set(target, Long.valueOf(Util.stringValue(originValue)));
         }
     }
 
