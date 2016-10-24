@@ -209,7 +209,32 @@ public class BeanUtil {
         }
     }
 
+    /**
+     * 默认在枚举出错时不报错
+     *
+     * @param originValue
+     * @param targetField
+     * @param target
+     * @param <O>
+     * @param <T>
+     * @throws Exception
+     */
     public static <O, T> void filedMap(O originValue, Field targetField, T target) throws Exception {
+        filedMap(originValue, targetField, target, false);
+    }
+
+    /**
+     * map 转 bean 时用到
+     *
+     * @param originValue 原始值
+     * @param targetField 目标对象的 字段
+     * @param target      目标对象
+     * @param validEnum   是否在枚举出错时报异常
+     * @param <O>
+     * @param <T>
+     * @throws Exception
+     */
+    public static <O, T> void filedMap(O originValue, Field targetField, T target, boolean validEnum) throws Exception {
         targetField.setAccessible(true);
         Class<?> originFieldClass = originValue.getClass();
         Class<?> targetFieldClass = targetField.getType();
@@ -242,7 +267,13 @@ public class BeanUtil {
             }
         } else if (targetFieldClass.isEnum()) {
             //为 枚举
-            //targetField.set(target, toEnum(targetFieldClass, originValue));
+            try {
+                Enum value = toEnum((Class<Enum>) targetFieldClass, originValue);
+                targetField.set(target, value);
+            } catch (Exception e) {
+                if (validEnum)
+                    throw e;
+            }
         } else if (Double.class.equals(targetFieldClass)) {
             //为 Double
             targetField.set(target, Double.valueOf(Util.stringValue(originValue)));
@@ -261,6 +292,10 @@ public class BeanUtil {
         }
     }
 
+    public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target) throws Exception {
+        filedMap(originField, origin, targetField, target, false);
+    }
+
     /**
      * field 之间的映射转换
      *
@@ -268,10 +303,11 @@ public class BeanUtil {
      * @param origin
      * @param targetField
      * @param target
+     * @param validEnum   当枚举值不正确时是否报异常
      * @param <O>
      * @param <T>
      */
-    public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target) throws Exception {
+    public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target, boolean validEnum) throws Exception {
         originField.setAccessible(true);
         targetField.setAccessible(true);
         Object originValue = originField.get(origin);
@@ -280,7 +316,16 @@ public class BeanUtil {
         if (originValue == null) return;
         //为 String
         if (String.class.equals(targetFieldClass)) {
-            if (!isSuperClass(Date.class, originFieldClass)) {
+            if (originFieldClass.isEnum()) {
+                String enumValue = null;
+                try {
+                    enumValue = Util.stringValue(originFieldClass.getMethod("getKey").invoke(originValue));
+                } catch (Exception e) {
+                }
+                if (enumValue == null || enumValue.trim().equals(""))
+                    enumValue = Util.stringValue(originValue);
+                targetField.set(target, enumValue);
+            } else if (!isSuperClass(Date.class, originFieldClass)) {
                 targetField.set(target, Util.stringValue(originValue));
             } else {
                 DatePattern datePatternAnnotation = targetField.getAnnotation(DatePattern.class);
@@ -310,7 +355,13 @@ public class BeanUtil {
             }
         } else if (targetFieldClass.isEnum()) {
             //为 枚举
-            //targetField.set(target, toEnum(targetFieldClass, originValue));
+            try {
+                Enum value = toEnum((Class<Enum>) targetFieldClass, originValue);
+                targetField.set(target, value);
+            } catch (Exception e) {
+                if (validEnum)
+                    throw e;
+            }
         } else if (Double.class.equals(targetFieldClass)) {
             //为 Double
             targetField.set(target, Double.valueOf(Util.stringValue(originValue)));

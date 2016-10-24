@@ -5,6 +5,8 @@ import com.github.tj123.bean.validate.NotValidException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.lang.reflect.ParameterizedType;
+
 /**
  * dto 基类
  * Created by TJ on 2016/9/3.
@@ -19,9 +21,8 @@ public abstract class BaseDto<PO extends BasePo> extends BaseBean implements Dto
      * @return
      */
     public PO toPo() throws BeanConvertException {
-//        return (PO) BeanUtil.toPo(this, (Class) ((ParameterizedType) getClass()
-//                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        return null;
+        return (PO) BeanUtil.convert(this, (Class) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0]);
     }
 
 

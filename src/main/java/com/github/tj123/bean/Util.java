@@ -28,7 +28,7 @@ class Util {
      * 判断为空
      */
     public static boolean isBlank(String value) {
-        return value != null && !value.trim().equals("");
+        return value == null || value.trim().equals("");
     }
 
     /**
