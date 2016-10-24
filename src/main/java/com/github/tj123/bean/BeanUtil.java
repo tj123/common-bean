@@ -293,7 +293,7 @@ public class BeanUtil {
     }
 
     public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target) throws Exception {
-        filedMap(originField, origin, targetField, target, false);
+        filedMap(originField, origin, targetField, target, false, false);
     }
 
     /**
@@ -304,10 +304,11 @@ public class BeanUtil {
      * @param targetField
      * @param target
      * @param validEnum   当枚举值不正确时是否报异常
+     * @param validDate   日期不正确时是否报异常
      * @param <O>
      * @param <T>
      */
-    public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target, boolean validEnum) throws Exception {
+    public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target, boolean validEnum, boolean validDate) throws Exception {
         originField.setAccessible(true);
         targetField.setAccessible(true);
         Object originValue = originField.get(origin);
@@ -343,7 +344,20 @@ public class BeanUtil {
                 datePattern = datePatternAnnotation.value();
             }
             if (Date.class.equals(targetFieldClass)) {
-                targetField.set(target, Util.stringToDate(Util.stringValue(originValue), datePattern));
+                String date = null;
+                try {
+                    date = Util.stringValue(originValue);
+                    targetField.set(target, Util.stringToDate(date, datePattern));
+                } catch (Exception e) {
+                    if (validDate) {
+                        throw e;
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("日期：" + date + " 不符合格式：" + datePattern);
+                        }
+                    }
+
+                }
             } else if (isInterfaceOf(DateConvert.class, targetFieldClass)) {
                 DateConvert targetValue = (DateConvert) targetFieldClass.newInstance();
                 targetValue.setDate(Util.stringToDate(Util.stringValue(originValue), datePattern));
@@ -359,8 +373,13 @@ public class BeanUtil {
                 Enum value = toEnum((Class<Enum>) targetFieldClass, originValue);
                 targetField.set(target, value);
             } catch (Exception e) {
-                if (validEnum)
+                if (validEnum) {
                     throw e;
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("枚举值：" + originValue + " 不符合要求");
+                    }
+                }
             }
         } else if (Double.class.equals(targetFieldClass)) {
             //为 Double
