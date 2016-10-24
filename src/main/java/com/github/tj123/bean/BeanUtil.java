@@ -5,7 +5,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,38 +21,26 @@ public class BeanUtil {
      *
      * @param map
      * @param clazz
-     * @param allFiled    转换所有字段
-     *                    true: 当有错误时字段为空
-     *                    false： 当有错误即抛出异常
+     * @param allFiled 转换所有字段
+     *                 true: 当有错误时字段为空
+     *                 false： 当有错误即抛出异常
      * @param <B>
      * @param <K>
      * @param <V>
      * @return
      * @throws BeanConvertException
      */
-    public static <B, K, V> B toBean(Map<K, V> map, Class<B> clazz,boolean allFiled) throws BeanConvertException {
+    public static <B, K, V> B toBean(Map<K, V> map, Class<B> clazz, boolean allFiled) throws BeanConvertException {
         try {
             B target = clazz.newInstance();
             for (K key : map.keySet()) {
-                ((String)key).toUpperCase();
+                ((String) key).toUpperCase();
             }
-            for (Method setMethod : clazz.getMethods()) {
-                try {
-                    String setMethodName = setMethod.getName();
-                    if (!setMethodName.startsWith("set")) continue;
-                    String fieldName = getField(setMethodName);
-                    Field field = clazz.getDeclaredField(fieldName);
-                    Class<?> fieldClass = field.getType();
-                }catch (Exception e){
-                    if (!allFiled) {
-                        throw e;
-                    } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug(setMethod + "错误：", e);
-                        }
-                    }
-                }
-
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field targetField : fields) {
+                if ("serialVersionUID".equals(targetField.getName())) continue;
+                //Field originField = originClass.getDeclaredField(targetField.getName());
+                //filedMap(originField, origin, targetField, target);
             }
             return target;
         } catch (Exception e) {
@@ -65,13 +52,13 @@ public class BeanUtil {
     /**
      * 对象转为 map 默认包含空字段
      *
-     * @param bean        对象
+     * @param bean 对象
      * @param <B>
      * @return
      * @throws BeanConvertException
      */
     public static <B> Map toMap(B bean) throws BeanConvertException {
-        return  toMap(bean,true);
+        return toMap(bean, true);
     }
 
     /**
@@ -84,10 +71,10 @@ public class BeanUtil {
      * @throws BeanConvertException
      */
     public static <B> Map toMap(B bean, boolean includeNull) throws BeanConvertException {
-        Map<String,Object> map = new HashMap();
+        Map<String, Object> map = new HashMap();
         Class<?> clazz = bean.getClass();
         for (Field field : clazz.getDeclaredFields()) {
-            if(field.getName().equals("serialVersionUID"))
+            if (field.getName().equals("serialVersionUID"))
                 continue;
             field.setAccessible(true);
             try {
@@ -154,82 +141,15 @@ public class BeanUtil {
      * @return
      * @throws BeanConvertException
      */
-    @SuppressWarnings("unchecked")
     public static <O, T> T convert(O origin, Class<T> targetClass, boolean allFiled) throws BeanConvertException {
         try {
             T target = targetClass.newInstance();
             Class<?> originClass = origin.getClass();
-            for (Method targetSetMethod : targetClass.getMethods()) {
-                try {
-                    String targetMethodName = targetSetMethod.getName();
-                    if (!targetMethodName.startsWith("set")) continue;
-                    String fieldName = getField(targetMethodName);
-                    //                Class<?> targetFieldClass = targetSetMethod.getParameterTypes()[0];
-                    Field targetField = targetClass.getDeclaredField(fieldName);
-                    Class<?> targetFieldClass = targetField.getType();
-                    Method originGetMethod = originClass.getMethod(getGetterName(fieldName));
-                    Class<?> originFieldClass = originGetMethod.getReturnType();
-                    Field originField = originClass.getDeclaredField(fieldName);
-                    Object originValue = originGetMethod.invoke(origin);
-                    if (originValue == null) continue;
-                    //为 String
-                    if (String.class.equals(targetFieldClass)) {
-                        if (!isSuperClass(Date.class, originFieldClass)) {
-                            targetSetMethod.invoke(target, Util.stringValue(originValue));
-                        } else {
-                            DatePattern datePatternAnnotation = targetField.getAnnotation(DatePattern.class);
-                            String datePattern = BeanConfig.DEFAULT_DATE_PATTEN;
-                            if (datePatternAnnotation != null) {
-                                datePattern = datePatternAnnotation.value();
-                            }
-                            targetSetMethod.invoke(target, Util.dateToString((Date) originValue, datePattern));
-                        }
-                    } else if (isSuperClass(Date.class, targetFieldClass)) {
-                        // 为 Date 类型或者 Date的子类
-                        DatePattern datePatternAnnotation = originField.getAnnotation(DatePattern.class);
-                        String datePattern = BeanConfig.DEFAULT_DATE_PATTEN;
-                        if (datePatternAnnotation != null) {
-                            datePattern = datePatternAnnotation.value();
-                        }
-                        if (Date.class.equals(targetFieldClass)) {
-                            targetSetMethod.invoke(target, Util.stringToDate(Util.stringValue(originValue), datePattern));
-                        } else if (isInterfaceOf(DateConvert.class, targetFieldClass)) {
-                            DateConvert targetValue = (DateConvert) targetFieldClass.newInstance();
-                            targetValue.setDate(Util.stringToDate(Util.stringValue(originValue), datePattern));
-                            targetSetMethod.invoke(target, targetValue);
-                        } else {
-                            if (log.isDebugEnabled()) {
-                                log.debug("必须实现 DateConvert 接口,以完成转换：", new BeanConvertException());
-                            }
-                        }
-                    } else if (targetFieldClass.isEnum()) {
-                        //为 枚举
-                        //targetSetMethod.invoke(target, toEnum(targetFieldClass, originValue));
-                    } else if (Double.class.equals(targetFieldClass)) {
-                        //为 Double
-                        targetSetMethod.invoke(target, Double.valueOf(Util.stringValue(originValue)));
-                    } else if (Integer.class.equals(targetFieldClass)) {
-                        //为 Integer
-                        targetSetMethod.invoke(target, Integer.valueOf(Util.stringValue(originValue)));
-                    } else if (Float.class.equals(targetFieldClass)) {
-                        //为 Float
-                        targetSetMethod.invoke(target, Float.valueOf(Util.stringValue(originValue)));
-                    } else if (Short.class.equals(targetFieldClass)) {
-                        //为 Short
-                        targetSetMethod.invoke(target, Short.valueOf(Util.stringValue(originValue)));
-                    } else if (Long.class.equals(targetFieldClass)) {
-                        //为 Long
-                        targetSetMethod.invoke(target, Long.valueOf(Util.stringValue(originValue)));
-                    }
-                } catch (Exception e) {
-                    if (!allFiled) {
-                        throw e;
-                    } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug(targetSetMethod + "错误：", e);
-                        }
-                    }
-                }
+            Field[] fields = targetClass.getDeclaredFields();
+            for (Field targetField : fields) {
+                if ("serialVersionUID".equals(targetField.getName())) continue;
+                Field originField = originClass.getDeclaredField(targetField.getName());
+                filedMap(originField, origin, targetField, target);
             }
             return target;
         } catch (Exception e) {
@@ -237,39 +157,6 @@ public class BeanUtil {
         }
     }
 
-    /**
-     * 根据 方法名 得出 字段名称 :
-     * 方法名必须为 getter 或者 setter
-     *
-     * @param methodName
-     * @return
-     */
-    public static String getField(String methodName) {
-        String field = methodName.substring(3);
-        return Character.isUpperCase(field.charAt(1)) ? field :
-                field.substring(0, 1).toLowerCase() + field.substring(1);
-    }
-
-    /**
-     * 根据 字段 获取 set 方法
-     *
-     * @param fieldName
-     * @return
-     */
-    public static String getSetterName(String fieldName) {
-        return "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-    }
-
-
-    /**
-     * 根据 字段 获取 get 方法
-     *
-     * @param fieldName
-     * @return
-     */
-    public static String getGetterName(String fieldName) {
-        return "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-    }
 
     /**
      * 判断是否为父类
@@ -322,6 +209,74 @@ public class BeanUtil {
             } catch (CannotConvertException e1) {
                 throw new BeanConvertException(e1);
             }
+        }
+    }
+
+    /**
+     * field 之间的映射转换
+     *
+     * @param originField
+     * @param origin
+     * @param targetField
+     * @param target
+     * @param <O>
+     * @param <T>
+     */
+    public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target) throws Exception {
+        originField.setAccessible(true);
+        targetField.setAccessible(true);
+        Object originValue = originField.get(origin);
+        Class<?> originFieldClass = originField.getType();
+        Class<?> targetFieldClass = targetField.getType();
+        if (originValue == null) return;
+        //为 String
+        if (String.class.equals(targetFieldClass)) {
+            if (!isSuperClass(Date.class, originFieldClass)) {
+                targetField.set(target, Util.stringValue(originValue));
+            } else {
+                DatePattern datePatternAnnotation = targetField.getAnnotation(DatePattern.class);
+                String datePattern = BeanConfig.DEFAULT_DATE_PATTEN;
+                if (datePatternAnnotation != null) {
+                    datePattern = datePatternAnnotation.value();
+                }
+                targetField.set(target, Util.dateToString((Date) originValue, datePattern));
+            }
+        } else if (isSuperClass(Date.class, targetFieldClass)) {
+            // 为 Date 类型或者 Date的子类
+            DatePattern datePatternAnnotation = originField.getAnnotation(DatePattern.class);
+            String datePattern = BeanConfig.DEFAULT_DATE_PATTEN;
+            if (datePatternAnnotation != null) {
+                datePattern = datePatternAnnotation.value();
+            }
+            if (Date.class.equals(targetFieldClass)) {
+                targetField.set(target, Util.stringToDate(Util.stringValue(originValue), datePattern));
+            } else if (isInterfaceOf(DateConvert.class, targetFieldClass)) {
+                DateConvert targetValue = (DateConvert) targetFieldClass.newInstance();
+                targetValue.setDate(Util.stringToDate(Util.stringValue(originValue), datePattern));
+                targetField.set(target, targetValue);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("必须实现 DateConvert 接口,以完成转换：", new BeanConvertException());
+                }
+            }
+        } else if (targetFieldClass.isEnum()) {
+            //为 枚举
+            //targetField.set(target, toEnum(targetFieldClass, originValue));
+        } else if (Double.class.equals(targetFieldClass)) {
+            //为 Double
+            targetField.set(target, Double.valueOf(Util.stringValue(originValue)));
+        } else if (Integer.class.equals(targetFieldClass)) {
+            //为 Integer
+            targetField.set(target, Integer.valueOf(Util.stringValue(originValue)));
+        } else if (Float.class.equals(targetFieldClass)) {
+            //为 Float
+            targetField.set(target, Float.valueOf(Util.stringValue(originValue)));
+        } else if (Short.class.equals(targetFieldClass)) {
+            //为 Short
+            targetField.set(target, Short.valueOf(Util.stringValue(originValue)));
+        } else if (Long.class.equals(targetFieldClass)) {
+            //为 Long
+            targetField.set(target, Long.valueOf(Util.stringValue(originValue)));
         }
     }
 
