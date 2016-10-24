@@ -1,4 +1,4 @@
-package com.github.tj123.db.commonv7.bean;
+package com.github.tj123.bean;
 
 /**
  * Created by TJ on 2016/9/2.

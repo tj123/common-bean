@@ -1,7 +1,6 @@
-package com.github.tj123.db.commonv7.bean;
+package com.github.tj123.bean;
 
 
-import com.github.tj123.db.Bean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -11,7 +10,7 @@ import java.util.Map;
 /**
  * Created by TJ on 2016/9/3.
  */
-abstract class BaseBean implements Bean,Serializable{
+public abstract class BaseBean implements Bean,Serializable{
 
     private static Log log = LogFactory.getLog(BaseBean.class);
 

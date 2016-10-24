@@ -1,4 +1,4 @@
-package com.github.tj123.db.commonv7.bean.validate;
+package com.github.tj123.bean.validate;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -7,14 +7,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 字段为电话号码
+ * 字段为手机号
  * @author TJ
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@ValidRegExp("\\d+")
-public @interface Tel {
+@ValidRegExp("\\d{11}")
+public @interface Phone {
 
     String message() default "";
 

@@ -1,4 +1,4 @@
-package com.github.tj123.db.commonv7.bean.validate;
+package com.github.tj123.bean.validate;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -7,16 +7,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 字段匹配的 正则
+ * 字段为 email
  * @author TJ
  */
-@Target({ ElementType.FIELD, ElementType.ANNOTATION_TYPE })
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface ValidRegExp {
-	
-	String value();
+@ValidRegExp("\\w+@\\w+")
+public @interface Email {
 
-	String message() default "";
-	
+    String message() default "";
+
 }

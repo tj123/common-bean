@@ -1,4 +1,4 @@
-package com.github.tj123.db.commonv7.bean.validate;
+package com.github.tj123.bean.validate;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -7,15 +7,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 字段为 email
+ * 调用验证方法，完成一个接口即可使用
  * @author TJ
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@ValidRegExp("\\w+@\\w+")
-public @interface Email {
+public @interface ValidateMethod{
 
-    String message() default "";
-
+	 Class<? extends Checkable> value();
+	
 }

@@ -1,4 +1,4 @@
-package com.github.tj123.db.commonv7.bean.validate;
+package com.github.tj123.bean.validate;
 
 import java.util.*;
 

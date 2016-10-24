@@ -1,4 +1,4 @@
-package com.github.tj123.db.commonv7.bean;
+package com.github.tj123.bean;
 
 
 import org.apache.commons.logging.Log;

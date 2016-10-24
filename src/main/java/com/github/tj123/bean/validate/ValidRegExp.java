@@ -1,4 +1,4 @@
-package com.github.tj123.db.commonv7.bean;
+package com.github.tj123.bean.validate;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -7,15 +7,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 指定日期格式 (用于类型转换,也用于验证)\
- * (不晓得日期转 字符串的时候会报什么异常)
+ * 字段匹配的 正则
  * @author TJ
  */
-@Target({ElementType.FIELD})
+@Target({ ElementType.FIELD, ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface DatePattern {
+public @interface ValidRegExp {
 	
 	String value();
+
+	String message() default "";
 	
 }

@@ -1,6 +1,5 @@
-package com.github.tj123.db.commonv7.bean;
+package com.github.tj123.bean;
 
-import com.github.tj123.db.Po;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
