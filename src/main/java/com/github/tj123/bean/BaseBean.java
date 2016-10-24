@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by TJ on 2016/9/3.
  */
-public abstract class BaseBean implements Bean,Serializable{
+abstract class BaseBean implements Bean,Serializable{
 
     private static Log log = LogFactory.getLog(BaseBean.class);
 

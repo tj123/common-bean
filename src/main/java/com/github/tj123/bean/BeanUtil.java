@@ -100,27 +100,6 @@ public class BeanUtil {
                 throw new BeanConvertException(e);
             }
         }
-//        for (Method method : clazz.getMethods()) {
-//            String methodName = method.getName();
-//            if (methodName.startsWith("get")) {
-//                String key = methodName.substring(3);
-//                key = key.substring(0, 1).toLowerCase() + key.substring(1);
-//                if (Util.isBlank(key) || "class".equals(key))
-//                    continue;
-//                try {
-//                    Object value = method.invoke(bean);
-//                    if (includeNull) {
-//                        map.put(key, value);
-//                    } else {
-//                        if (value != null) {
-//                            map.put(key, value);
-//                        }
-//                    }
-//                } catch (IllegalAccessException | InvocationTargetException e) {
-//                    throw new BeanConvertException(e);
-//                }
-//            }
-//        }
         return map;
     }
 
@@ -136,7 +115,7 @@ public class BeanUtil {
         for (Field field : fields) {
             field.setAccessible(true);
             try {
-                if (field.get(bean) == null && String.class.equals(field.getType())) {
+                if (String.class.equals(field.getType()) && field.get(bean) == null) {
                     field.set(bean, "");
                 }
             } catch (IllegalArgumentException | IllegalAccessException e) {
