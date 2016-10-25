@@ -1,13 +1,10 @@
 package com.github.tj123.bean.validate;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * 字段为电话号码
+ *
  * @author TJ
  */
 @Target({ElementType.FIELD})
@@ -16,6 +13,6 @@ import java.lang.annotation.Target;
 @ValidRegExp("\\d+")
 public @interface Tel {
 
-    String message() default "";
+    String message() default ValidateUtil.TEL_DEFAULT_MESSAGE;
 
 }

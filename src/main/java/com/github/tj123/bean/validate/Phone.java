@@ -16,6 +16,6 @@ import java.lang.annotation.Target;
 @ValidRegExp("\\d{11}")
 public @interface Phone {
 
-    String message() default "";
+    String message() default ValidateUtil.PHONE_DEFAULT_MESSAGE;
 
 }

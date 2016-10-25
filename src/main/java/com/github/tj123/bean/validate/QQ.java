@@ -3,14 +3,16 @@ package com.github.tj123.bean.validate;
 import java.lang.annotation.*;
 
 /**
- * 字段不能为空
- * Created by TJ on 2016/3/2.
+ * 字段为电话号码
+ *
+ * @author TJ
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface NotNull {
+@ValidRegExp("\\d+")
+public @interface QQ {
 
-    String message() default ValidateUtil.NOTNULL_DEFAULT_MESSAGE;
+    String message() default ValidateUtil.TEL_DEFAULT_MESSAGE;
 
 }

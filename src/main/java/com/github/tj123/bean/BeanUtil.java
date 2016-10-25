@@ -178,17 +178,6 @@ public class BeanUtil {
     }
 
     /**
-     * 判断是否为子类
-     *
-     * @param subClass    子类
-     * @param supperClass 父类
-     * @return
-     */
-    public static boolean isSubClass(Class<?> subClass, Class<?> supperClass) {
-        return !isSuperClass(subClass, supperClass);
-    }
-
-    /**
      * 默认在枚举出错时不报错
      *
      * @param originValue
@@ -293,13 +282,13 @@ public class BeanUtil {
         Object originValue = originField.get(origin);
         Class<?> originFieldClass = originField.getType();
         Class<?> targetFieldClass = targetField.getType();
-        //if (originValue == null) return;
+        if (originValue == null) return;
         //为 String
         if (String.class.equals(targetFieldClass)) {
             if (originValue == null) return;
-            if(String.class.equals(originFieldClass)){
+            if (String.class.equals(originFieldClass)) {
                 targetField.set(target, originValue);
-            }else if (originFieldClass.isEnum()) {
+            } else if (originFieldClass.isEnum()) {
                 targetField.set(target, Util.getEnumKeyOrValue((Enum) originValue));
             } else if (!isSuperClass(Date.class, originFieldClass)) {
                 targetField.set(target, Util.stringValue(originValue));
@@ -313,19 +302,12 @@ public class BeanUtil {
             }
         } else if (isSuperClass(Date.class, targetFieldClass)) {
             // 为 Date 类型或者 Date的子类
-            DefaultCurrent defaultCurrent = targetField.getAnnotation(DefaultCurrent.class);
             DatePattern datePatternAnnotation = originField.getAnnotation(DatePattern.class);
             String datePattern = BeanConfig.DEFAULT_DATE_PATTEN;
             if (datePatternAnnotation != null) {
                 datePattern = datePatternAnnotation.value();
             }
             if (Date.class.equals(targetFieldClass)) {
-                if(originValue == null){
-                    if (defaultCurrent != null) {
-                        targetField.set(target, new Date());
-                    }
-                    return;
-                }
                 String dateStr = null;
                 try {
                     targetField.set(target, Util.stringToDate(Util.stringValue(originValue), datePattern));
@@ -340,13 +322,6 @@ public class BeanUtil {
                 }
             } else if (isInterfaceOf(DateConvert.class, targetFieldClass)) {
                 DateConvert targetValue = (DateConvert) targetFieldClass.newInstance();
-                if(originValue == null){
-                    if (defaultCurrent != null) {
-                        targetValue.setDate(new Date());
-                        targetField.set(target, targetValue);
-                    }
-                    return;
-                }
                 targetValue.setDate(Util.stringToDate(Util.stringValue(originValue), datePattern));
                 targetField.set(target, targetValue);
             } else {
@@ -382,6 +357,10 @@ public class BeanUtil {
                 } else if (Long.class.equals(targetFieldClass)) {
                     //为 Long
                     targetField.set(target, Long.valueOf(Util.stringValue(originValue)));
+                } else {
+                    if (log.isErrorEnabled()) {
+                        log.error("不能识别的字段:" + originField + " " + originValue);
+                    }
                 }
             } catch (Exception e) {
                 if (validNumber) {

@@ -1,5 +1,7 @@
 package com.github.tj123.bean;
 
+import com.github.tj123.bean.validate.ValidateUtil;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,5 +19,6 @@ import java.lang.annotation.Target;
 public @interface DatePattern {
 	
 	String value();
-	
+
+	String message() default ValidateUtil.DATE_PATTERN_DEFAULT_MESSAGE;
 }

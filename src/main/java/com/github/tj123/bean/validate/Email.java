@@ -1,13 +1,10 @@
 package com.github.tj123.bean.validate;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * 字段为 email
+ *
  * @author TJ
  */
 @Target({ElementType.FIELD})
@@ -16,6 +13,6 @@ import java.lang.annotation.Target;
 @ValidRegExp("\\w+@\\w+")
 public @interface Email {
 
-    String message() default "";
+    String message() default ValidateUtil.EMAIL_DEFAULT_MESSAGE;
 
 }

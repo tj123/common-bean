@@ -17,6 +17,6 @@ public @interface ValidRegExp {
 	
 	String value();
 
-	String message() default "";
+	String message() default ValidateUtil.VALID_REGEXP_DEFAULT_MESSAGE;
 	
 }

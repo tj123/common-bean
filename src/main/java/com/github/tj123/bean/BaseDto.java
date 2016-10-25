@@ -2,6 +2,7 @@ package com.github.tj123.bean;
 
 
 import com.github.tj123.bean.validate.NotValidException;
+import com.github.tj123.bean.validate.ValidateUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,10 +44,8 @@ public abstract class BaseDto<PO extends BasePo> extends BaseBean implements Dto
      * @return
      */
     public <DTO extends BaseDto> DTO validate() throws NotValidException {
-        DTO dto = (DTO) this;
-        Class<? extends BaseDto> clazz = dto.getClass();
-
-        return dto;
+        ValidateUtil.validate(this);
+        return (DTO) this;
     }
 
 }

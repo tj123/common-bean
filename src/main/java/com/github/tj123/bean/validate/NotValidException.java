@@ -33,7 +33,7 @@ public class NotValidException extends Exception {
         if (it.hasNext()) {
             Map.Entry<String, List<String>> entry = it.next();
             List<String> list = entry.getValue();
-            return entry.getKey() + list.get(0);
+            return list.get(0);
         }
         return message;
     }
