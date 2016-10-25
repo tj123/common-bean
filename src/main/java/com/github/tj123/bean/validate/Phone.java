@@ -18,4 +18,6 @@ public @interface Phone {
 
     String message() default ValidateUtil.PHONE_DEFAULT_MESSAGE;
 
+    int messagePriority() default ValidateUtil.HIGHEST_PRIORITY - ValidateUtil.PRIORITY_STEP;
+
 }

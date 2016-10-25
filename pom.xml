@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.tj123.bean</groupId>
     <artifactId>common-bean</artifactId>
-    <version>1.0.0001</version>
+    <version>1.0.0002</version>
     <name>common-bean</name>
     <packaging>jar</packaging>
 
@@ -80,13 +80,13 @@
     </dependencies>
 
     <!-- maven部署仓库配置 -->
-    <distributionManagement>
+<!--    <distributionManagement>
         <repository>
             <id>yuanben-release</id>
             <name>Yuanben Release</name>
             <url>http://192.168.1.5:8081/nexus/content/repositories/Yuanben-Release/</url>
         </repository>
-    </distributionManagement>
+    </distributionManagement>-->
 
     <build>
         <plugins>
@@ -135,13 +135,13 @@
 
         </plugins>
 
-        <extensions>
+<!--        <extensions>
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ftp</artifactId>
                 <version>2.10</version>
             </extension>
-        </extensions>
+        </extensions>-->
 
     </build>
 </project>

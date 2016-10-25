@@ -15,4 +15,6 @@ public @interface QQ {
 
     String message() default ValidateUtil.TEL_DEFAULT_MESSAGE;
 
+    int messagePriority() default ValidateUtil.HIGHEST_PRIORITY - ValidateUtil.PRIORITY_STEP;
+
 }

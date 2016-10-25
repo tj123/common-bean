@@ -11,6 +11,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface Message {
 
-    String value();
+    String message();
+
+    int messagePriority() default ValidateUtil.LOWEST_PRIORITY;
 
 }

@@ -15,4 +15,6 @@ public @interface Email {
 
     String message() default ValidateUtil.EMAIL_DEFAULT_MESSAGE;
 
+    int messagePriority() default ValidateUtil.LOWEST_PRIORITY - 2 * ValidateUtil.PRIORITY_STEP;
+
 }

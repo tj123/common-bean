@@ -34,6 +34,11 @@ public class ValidateUtil {
     public static final String VALIDATE_METHOD_DEFAULT_ERROR = "字段：{field} 错误";
     public static final String DATE_PATTERN_DEFAULT_MESSAGE = "字段：{field} 日期格式错误";
 
+    public static final int LOWEST_PRIORITY = 30;
+    public static final int HIGHEST_PRIORITY = 0;
+    public static final int PRIORITY_STEP = 1;
+
+
     /**
      * 判断注解是否存在
      *

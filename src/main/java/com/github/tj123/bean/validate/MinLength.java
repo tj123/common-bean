@@ -14,4 +14,6 @@ public @interface MinLength {
 
     String message() default ValidateUtil.MIN_LENGTH_DEFAULT_MESSAGE;
 
+    int messagePriority() default ValidateUtil.LOWEST_PRIORITY - 3 * ValidateUtil.PRIORITY_STEP;
+
 }

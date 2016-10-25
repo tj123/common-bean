@@ -16,4 +16,6 @@ public @interface ValidateMethod {
 
     String message() default ValidateUtil.VALIDATE_METHOD_DEFAULT_ERROR;
 
+    int messagePriority() default ValidateUtil.HIGHEST_PRIORITY - ValidateUtil.PRIORITY_STEP;
+
 }

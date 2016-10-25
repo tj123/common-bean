@@ -13,4 +13,6 @@ public @interface NotNull {
 
     String message() default ValidateUtil.NOTNULL_DEFAULT_MESSAGE;
 
+    int messagePriority() default ValidateUtil.HIGHEST_PRIORITY;
+
 }
