@@ -16,6 +16,13 @@ import java.util.Date;
  */
 public class ValidateUtil {
 
+    /**
+     * 可以使用的花括符 有：
+     * {field} 字段名
+     * {annoValue} 字段注解上的 value()
+     * {value} 字段的值
+     */
+
     public static final String MIN_LENGTH_DEFAULT_MESSAGE = "字段：{field} 长度不能小于{annoValue}";
     public static final String MAX_LENGTH_DEFAULT_MESSAGE = "字段：{field} 长度不能大于{annoValue}";
     public static final String EMAIL_DEFAULT_MESSAGE = "字段：{field} 邮箱格式错误";
@@ -52,7 +59,8 @@ public class ValidateUtil {
 
     private static final Log log = LogFactory.getLog(ValidateUtil.class);
 
-    public static final Class<? extends Annotation>[] annotations = new Class[]{Email.class,
+    @SuppressWarnings("unchecked")
+	public static final Class<? extends Annotation>[] annotations = new Class[]{Email.class,
             InvalidRegExp.class, MaxLength.class, MinLength.class, NotNull.class, Phone.class,
             QQ.class, Tel.class, ValidateMethod.class, ValidRegExp.class};
 
@@ -148,7 +156,8 @@ public class ValidateUtil {
      * @param <V>
      * @throws NotValidException
      */
-    private static <V> void validateField(V value, FieldWrapper fieldWrapper, Field field, boolean checkAll) throws NotValidException {
+    @SuppressWarnings("unused")
+	private static <V> void validateField(V value, FieldWrapper fieldWrapper, Field field, boolean checkAll) throws NotValidException {
         field.setAccessible(true);
         Object fieldValue = null;
         NotValidException notValidException = null;
@@ -177,6 +186,7 @@ public class ValidateUtil {
         if(notValidException != null && notValidException.hasError()){
             throw notValidException;
         }
+
     }
 }
 

@@ -49,7 +49,7 @@ public class FieldWrapper {
      *
      * @param classes
      */
-    public void setAnnotations(Class<? extends Annotation>... classes) {
+    public void setAnnotations(@SuppressWarnings("unchecked") Class<? extends Annotation>... classes) {
         if(field == null){
             if(log.isErrorEnabled()){
                 log.error("必须先调用setField()",new Exception("必须先调用setField()"));

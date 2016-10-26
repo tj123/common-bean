@@ -132,7 +132,7 @@ public class AnnotationWrapper {
      * @return
      */
     public <A extends Annotation> A getOnAnnotation(Class<A> clazz) {
-        if(annotation == null)
+        if (annotation == null)
             return null;
         return annotation.annotationType().getAnnotation(clazz);
     }
@@ -153,7 +153,7 @@ public class AnnotationWrapper {
      * @param classes
      * @return
      */
-    public List<AnnotationWrapper> scanOn(Class<? extends Annotation>... classes) {
+    public List<AnnotationWrapper> scanOn(@SuppressWarnings("unchecked") Class<? extends Annotation>... classes) {
         List<AnnotationWrapper> list = new ArrayList<>();
         for (Class<? extends Annotation> clazz : classes) {
             AnnotationWrapper onAnnotationWrapper = getOnAnnotationWrapper(clazz);
@@ -171,7 +171,7 @@ public class AnnotationWrapper {
      * @return
      */
     public boolean is(Class<? extends Annotation> clazz) {
-        return clazz.equals(annotationClass);
+        return clazz.equals(annotationClass) && isExist();
     }
 
     /**
@@ -180,7 +180,7 @@ public class AnnotationWrapper {
      * @param classes
      * @return
      */
-    public boolean is(Class<? extends Annotation>... classes) {
+    public boolean is(@SuppressWarnings("unchecked") Class<? extends Annotation>... classes) {
         for (Class<? extends Annotation> clazz : classes) {
             if (is(clazz))
                 return true;
@@ -190,42 +190,45 @@ public class AnnotationWrapper {
 
     /**
      * 递归验证
+     *
      * @param fieldWrapper
      * @throws NotValidException
      */
-    public void validate(FieldWrapper fieldWrapper) throws NotValidException{
+    @SuppressWarnings("unchecked")
+	public void validate(FieldWrapper fieldWrapper) throws NotValidException {
+        if(!isExist()) return;
         if (is(Email.class, Phone.class, Tel.class, QQ.class)) {
             for (AnnotationWrapper annotationWrapper : scanOn(ValidateUtil.annotations)) {
                 annotationWrapper.validate(fieldWrapper);
             }
-        }else if (is(NotNull.class)){
+        } else if (is(NotNull.class)) {
             if (fieldWrapper.isNull()) {
-                throw new NotValidException(this,fieldWrapper);
+                throw new NotValidException(this, fieldWrapper);
             }
-        }else if(is(ValidRegExp.class)){
-            if(fieldWrapper.isNotBlank()){
-                if(!fieldWrapper.getStringValue().matches(value()))
-                    throw new NotValidException(this,fieldWrapper);
+        } else if (is(ValidRegExp.class)) {
+            if (fieldWrapper.isNotBlank()) {
+                if (!fieldWrapper.getStringValue().matches(value()))
+                    throw new NotValidException(this, fieldWrapper);
             }
-        }else if(is(InvalidRegExp.class)){
-            if(fieldWrapper.isNotBlank()){
-                if(fieldWrapper.getStringValue().matches(value()))
-                    throw new NotValidException(this,fieldWrapper);
+        } else if (is(InvalidRegExp.class)) {
+            if (fieldWrapper.isNotBlank()) {
+                if (fieldWrapper.getStringValue().matches(value()))
+                    throw new NotValidException(this, fieldWrapper);
             }
-        }else if(is(MinLength.class)){
+        } else if (is(MinLength.class)) {
             if (fieldWrapper.isNotBlank()) {
                 if (fieldWrapper.getStringValue().length() < Integer.valueOf(value())) {
-                    throw new NotValidException(this,fieldWrapper);
+                    throw new NotValidException(this, fieldWrapper);
                 }
             }
-        }else if(is(MaxLength.class)){
+        } else if (is(MaxLength.class)) {
             if (fieldWrapper.isNotBlank()) {
                 if (fieldWrapper.getStringValue().length() > Integer.valueOf(value())) {
-                    throw new NotValidException(this,fieldWrapper);
+                    throw new NotValidException(this, fieldWrapper);
                 }
             }
-        }else if(is(ValidateMethod.class)){
-            ValidateMethod validateMethod = (ValidateMethod)getAnnotation();
+        } else if (is(ValidateMethod.class)) {
+            ValidateMethod validateMethod = (ValidateMethod) getAnnotation();
             Class<? extends Checkable> value = validateMethod.value();
             try {
                 value.newInstance().check(fieldWrapper.getFieldValue());
@@ -234,15 +237,15 @@ public class AnnotationWrapper {
                     log.error("调用错误", e);
                 }
             }
-        }else if(is(DatePattern.class)){
+        } else if (is(DatePattern.class)) {
             if (fieldWrapper.isNotBlank()) {
                 try {
-                    ValidateUtil.stringToDate(fieldWrapper.getStringValue(),value());
+                    ValidateUtil.stringToDate(fieldWrapper.getStringValue(), value());
                 } catch (Exception e) {
-                    throw new NotValidException(this,fieldWrapper);
+                    throw new NotValidException(this, fieldWrapper);
                 }
             }
-        }else{
+        } else {
             if (log.isErrorEnabled()) {
                 log.error("不能识别的注解：" + annotation);
             }

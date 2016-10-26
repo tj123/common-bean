@@ -54,7 +54,7 @@ public class BeanUtil {
      * @return
      * @throws BeanConvertException
      */
-    public static <B> Map<String,Object> toMap(B bean) throws BeanConvertException {
+    public static <B> Map<String, Object> toMap(B bean) throws BeanConvertException {
         return toMap(bean, true);
     }
 
@@ -67,7 +67,7 @@ public class BeanUtil {
      * @return
      * @throws BeanConvertException
      */
-    public static <B> Map<String,Object> toMap(B bean, boolean includeNull) throws BeanConvertException {
+    public static <B> Map<String, Object> toMap(B bean, boolean includeNull) throws BeanConvertException {
         Map<String, Object> map = new HashMap<>();
         Class<?> clazz = bean.getClass();
         for (Field field : clazz.getDeclaredFields()) {
@@ -104,7 +104,32 @@ public class BeanUtil {
                 }
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug(e);
+                    log.debug(e.getMessage(), e);
+                }
+            }
+        }
+        return bean;
+    }
+
+    /**
+     * 对所有字段 trim()
+     *
+     * @param bean
+     * @param <B>
+     * @return
+     */
+    public static <B> B trim(B bean) {
+        Field[] fields = bean.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            field.setAccessible(true);
+            try {
+                Object fieldValue = field.get(bean);
+                if (String.class.equals(field.getType()) && fieldValue != null) {
+                    field.set(bean,String.valueOf(fieldValue).trim());
+                }
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug(e.getMessage(), e);
                 }
             }
         }
@@ -202,8 +227,8 @@ public class BeanUtil {
      * @param <T>
      * @throws Exception
      */
-	@SuppressWarnings("unused")
-	public static <O, T> void filedMap(O originValue, Field targetField, T target, boolean validEnum) throws Exception {
+    @SuppressWarnings("unused")
+    public static <O, T> void filedMap(O originValue, Field targetField, T target, boolean validEnum) throws Exception {
         targetField.setAccessible(true);
         Class<?> originFieldClass = originValue.getClass();
         Class<?> targetFieldClass = targetField.getType();
@@ -235,8 +260,8 @@ public class BeanUtil {
         } else if (targetFieldClass.isEnum()) {
             //为 枚举
             try {
-                @SuppressWarnings({ "unchecked", "rawtypes" })
-				Enum<?> value = Util.toEnumByKeyOrValue((Class<Enum>) targetFieldClass, originValue);
+                @SuppressWarnings({"unchecked", "rawtypes"})
+                Enum<?> value = Util.toEnumByKeyOrValue((Class<Enum>) targetFieldClass, originValue);
                 targetField.set(target, value);
             } catch (Exception e) {
                 if (validEnum)
@@ -277,8 +302,8 @@ public class BeanUtil {
      * @param <O>
      * @param <T>
      */
-    @SuppressWarnings({ "unused", "unchecked", "rawtypes" })
-	public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target, boolean validEnum,
+    @SuppressWarnings({"unused", "unchecked", "rawtypes"})
+    public static <O, T> void filedMap(Field originField, O origin, Field targetField, T target, boolean validEnum,
                                        boolean validDate, boolean validNumber) throws Exception {
         originField.setAccessible(true);
         targetField.setAccessible(true);
@@ -333,7 +358,7 @@ public class BeanUtil {
         } else if (targetFieldClass.isEnum()) {
             //为 枚举
             try {
-				Enum<?> value = Util.toEnumByKeyOrValue((Class<Enum>) targetFieldClass, originValue);
+                Enum<?> value = Util.toEnumByKeyOrValue((Class<Enum>) targetFieldClass, originValue);
                 targetField.set(target, value);
             } catch (Exception e) {
                 if (validEnum) {

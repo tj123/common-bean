@@ -48,4 +48,16 @@ public abstract class BaseDto<PO extends BasePo<?>> extends BaseBean implements 
         return dto;
     }
 
+    /**
+     * 对不为空的进行 trim()
+     *
+     * @param <DTO>
+     * @return
+     */
+    public <DTO extends BaseDto<?>> DTO trim() {
+        DTO dto = (DTO) this;
+        BeanUtil.trim(dto);
+        return dto;
+    }
+
 }

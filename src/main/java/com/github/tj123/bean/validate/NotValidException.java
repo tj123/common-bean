@@ -31,17 +31,10 @@ public class NotValidException extends Exception {
             return priority;
         }
 
-        public void setPriority(Integer priority) {
-            this.priority = priority;
-        }
-
         public String getMessage() {
             return message;
         }
 
-        public void setMessage(String message) {
-            this.message = message;
-        }
     }
 
     /**
@@ -49,7 +42,9 @@ public class NotValidException extends Exception {
      */
     private class Errors extends HashMap<String, ArrayList<ErrorMessage>> {
 
-        /**
+		private static final long serialVersionUID = 1L;
+
+		/**
          * 排序
          */
         public void sort() {
@@ -169,11 +164,12 @@ public class NotValidException extends Exception {
         if (errors == null) {
             errors = new Errors();
         }
-        List<ErrorMessage> messages = errors.get(field);
+        ArrayList<ErrorMessage> messages = errors.get(field);
         if (messages == null) {
             messages = new ArrayList<>();
         }
         messages.add(new ErrorMessage(priority, message));
+        errors.put(field,messages);
         return this;
     }
 
