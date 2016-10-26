@@ -3,8 +3,6 @@ package com.github.tj123.bean;
 
 import com.github.tj123.bean.validate.NotValidException;
 import com.github.tj123.bean.validate.ValidateUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.lang.reflect.ParameterizedType;
 
@@ -12,17 +10,18 @@ import java.lang.reflect.ParameterizedType;
  * dto 基类
  * Created by TJ on 2016/9/3.
  */
-public abstract class BaseDto<PO extends BasePo> extends BaseBean implements Dto {
+@SuppressWarnings({ "serial", "unchecked" })
+public abstract class BaseDto<PO extends BasePo<?>> extends BaseBean implements Dto<PO> {
 
-    private Log log = LogFactory.getLog(BaseDto.class);
+    //private Log log = LogFactory.getLog(BaseDto.class);
 
     /**
      * 转 PO
      *
      * @return
      */
-    public PO toPo() throws BeanConvertException {
-        return (PO) BeanUtil.convert(this, (Class) ((ParameterizedType) getClass()
+	public PO toPo() throws BeanConvertException {
+        return (PO) BeanUtil.convert(this, (Class<?>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
     }
 
@@ -32,7 +31,7 @@ public abstract class BaseDto<PO extends BasePo> extends BaseBean implements Dto
      * @param <DTO>
      * @return
      */
-    public <DTO extends BaseDto> DTO fillNull() {
+    public <DTO extends BaseDto<?>> DTO fillNull() {
         DTO dto = (DTO) this;
         BeanUtil.fillNull(dto);
         return dto;
@@ -43,9 +42,10 @@ public abstract class BaseDto<PO extends BasePo> extends BaseBean implements Dto
      *
      * @return
      */
-    public <DTO extends BaseDto> DTO validate() throws NotValidException {
-        ValidateUtil.validate(this);
-        return (DTO) this;
+    public <DTO extends BaseDto<?>> DTO validate() throws NotValidException {
+    	DTO dto = (DTO) this;
+        ValidateUtil.validate(dto);
+        return dto;
     }
 
 }

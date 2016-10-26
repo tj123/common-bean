@@ -13,8 +13,8 @@ import java.lang.annotation.*;
 @ValidRegExp("\\d+")
 public @interface QQ {
 
-    String message() default ValidateUtil.TEL_DEFAULT_MESSAGE;
+    String message() default ValidateUtil.QQ_DEFAULT_MESSAGE;
 
-    int messagePriority() default ValidateUtil.HIGHEST_PRIORITY - ValidateUtil.PRIORITY_STEP;
+    int priority() default ValidateUtil.QQ_DEFAULT_PRIORITY;
 
 }

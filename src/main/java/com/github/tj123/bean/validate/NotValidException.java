@@ -1,5 +1,8 @@
 package com.github.tj123.bean.validate;
 
+import com.github.tj123.bean.validate.impl.AnnotationWrapper;
+import com.github.tj123.bean.validate.impl.FieldWrapper;
+
 import java.util.*;
 
 /**
@@ -8,10 +11,111 @@ import java.util.*;
  */
 public class NotValidException extends Exception {
 
+    /**
+     * 内部消息类
+     */
+    private class ErrorMessage {
+
+        private Integer priority;
+        private String message;
+
+        public ErrorMessage(Integer priority, String message) {
+            this.message = message;
+            this.priority = priority;
+        }
+
+        public Integer getPriority() {
+            if (priority == null) {
+                return ValidateUtil.LOWEST_PRIORITY;
+            }
+            return priority;
+        }
+
+        public void setPriority(Integer priority) {
+            this.priority = priority;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+    }
+
+    /**
+     * 错误消息最新
+     */
+    private class Errors extends HashMap<String, ArrayList<ErrorMessage>> {
+
+        /**
+         * 排序
+         */
+        public void sort() {
+            for (Map.Entry<String, ArrayList<ErrorMessage>> entry : entrySet()) {
+                List<ErrorMessage> value = entry.getValue();
+                Collections.sort(value, new Comparator<ErrorMessage>() {
+                    @Override
+                    public int compare(ErrorMessage msg1, ErrorMessage msg2) {
+                        return msg1.getPriority() - msg2.getPriority();
+                    }
+                });
+            }
+        }
+
+        /**
+         * 添加内容
+         *
+         * @param errors
+         */
+        public void add(Errors errors) {
+            for (String key : errors.keySet()) {
+                ArrayList<ErrorMessage> addValue = errors.get(key);
+                if (addValue != null && !addValue.isEmpty() && addValue.size() != 0) {
+                    ArrayList<ErrorMessage> originValue = get(key);
+                    if (originValue == null || addValue.isEmpty() || addValue.size() == 0) {
+                        put(key, addValue);
+                    } else {
+                        originValue.addAll(addValue);
+                    }
+                }
+
+            }
+        }
+
+        /**
+         * 获取一个
+         *
+         * @return
+         */
+        public String getOne() {
+            if (isEmpty() || size() == 0) {
+                return null;
+            }
+            sort();
+            for (Map.Entry<String, ArrayList<ErrorMessage>> entry : entrySet()) {
+                ArrayList<ErrorMessage> list = entry.getValue();
+                for (ErrorMessage errorMessage : list) {
+                    if (errorMessage != null) {
+                        String message = errorMessage.getMessage();
+                        if (message != null && !message.trim().equals("")) {
+                            return message;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+    }
+
+    private static final long serialVersionUID = 1L;
+
     public static final String NOT_VALID_MESSAGE = "not valid!";
 
     private String message;
-    private Map<String, List<String>> error = new HashMap<>();
+    private Errors errors;
 
     public NotValidException() {
         this(NOT_VALID_MESSAGE);
@@ -22,18 +126,29 @@ public class NotValidException extends Exception {
         setMessage(message);
     }
 
+    private Errors getErrors() {
+        return errors;
+    }
+
+    public NotValidException(String field, int priority, String message) {
+        this(message);
+        addError(field, priority, message);
+    }
+
     public NotValidException(String field, String message) {
         this(message);
-        addError(field, message);
+        addError(field, ValidateUtil.VALIDATE_METHOD_DEFAULT_PRIORITY, message);
+    }
+
+    public NotValidException(AnnotationWrapper annotationWrapper, FieldWrapper fieldWrapper) {
+        addError(annotationWrapper, fieldWrapper);
     }
 
     @Override
     public String getMessage() {
-        Iterator<Map.Entry<String, List<String>>> it = error.entrySet().iterator();
-        if (it.hasNext()) {
-            Map.Entry<String, List<String>> entry = it.next();
-            List<String> list = entry.getValue();
-            return list.get(0);
+        String one = errors.getOne();
+        if (one != null) {
+            return one;
         }
         return message;
     }
@@ -50,30 +165,49 @@ public class NotValidException extends Exception {
     /**
      * 添加错误
      */
-    public NotValidException addError(String field, String message) {
-        List<String> msgs = error.get(field);
-        if (msgs == null) {
-            msgs = new ArrayList<>();
+    public synchronized NotValidException addError(String field, int priority, String message) {
+        if (errors == null) {
+            errors = new Errors();
         }
-        msgs.add(message);
-        error.put(field, msgs);
+        List<ErrorMessage> messages = errors.get(field);
+        if (messages == null) {
+            messages = new ArrayList<>();
+        }
+        messages.add(new ErrorMessage(priority, message));
         return this;
     }
 
     /**
-     * 获所有的错误
+     * 添加错误消息
      *
      * @return
      */
-    public Map<String, List<String>> error() {
-        return error;
+    public NotValidException addError(AnnotationWrapper annotationWrapper, FieldWrapper fieldWrapper) {
+        addError(fieldWrapper.getField().getName(), annotationWrapper.priority(),
+                fieldWrapper.format(annotationWrapper.message(), annotationWrapper));
+        return this;
     }
 
     /**
      * 是否包含有错误
      */
     public boolean hasError() {
-        return error != null && !error.isEmpty() && error.size() != 0;
+        return errors != null && !errors.isEmpty() && errors.size() != 0;
+    }
+
+    /**
+     * 合并错误
+     *
+     * @param notValidException
+     * @return
+     */
+    public synchronized NotValidException merge(NotValidException notValidException) {
+        Errors otherErrors = notValidException.getErrors();
+        if (otherErrors == null || otherErrors.isEmpty() || otherErrors.size() == 0) {
+            errors.add(otherErrors);
+            return this;
+        }
+        return this;
     }
 
 }

@@ -13,6 +13,7 @@ public @interface MaxLength {
     int value();
 
     String message() default ValidateUtil.MAX_LENGTH_DEFAULT_MESSAGE;
-    int messagePriority() default ValidateUtil.LOWEST_PRIORITY - 3 * ValidateUtil.PRIORITY_STEP;
+
+    int priority() default ValidateUtil.MAX_LENGTH_DEFAULT_PRIORITY;
 
 }

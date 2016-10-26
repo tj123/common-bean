@@ -117,7 +117,7 @@
             </plugin>
 
             <!-- 要将源码放上去，需要加入这个插件 -->
-            <plugin>
+<!--            <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>3.0.1</version>
                 <configuration>
@@ -131,7 +131,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
 
         </plugins>
 

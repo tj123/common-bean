@@ -13,6 +13,6 @@ public @interface Message {
 
     String message();
 
-    int messagePriority() default ValidateUtil.LOWEST_PRIORITY;
+    int priority() default ValidateUtil.MESSAGE_DEFAULT_PRIORITY;
 
 }

@@ -1,7 +1,5 @@
 package com.github.tj123.bean;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,7 +12,7 @@ import java.util.UUID;
  */
 class Util {
 
-    private static Log log = LogFactory.getLog(Util.class);
+    //private static Log log = LogFactory.getLog(Util.class);
 
     /**
      * 获取值

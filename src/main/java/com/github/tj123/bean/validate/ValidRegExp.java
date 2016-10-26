@@ -19,6 +19,6 @@ public @interface ValidRegExp {
 
 	String message() default ValidateUtil.VALID_REGEXP_DEFAULT_MESSAGE;
 
-	int messagePriority() default ValidateUtil.HIGHEST_PRIORITY - ValidateUtil.PRIORITY_STEP;
+	int priority() default ValidateUtil.VALID_REGEXP_DEFAULT_PRIORITY;
 
 }

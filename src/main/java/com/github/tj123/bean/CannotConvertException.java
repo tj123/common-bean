@@ -5,7 +5,9 @@ package com.github.tj123.bean;
  */
 class CannotConvertException extends Exception {
 
-    public CannotConvertException() {
+	private static final long serialVersionUID = 1L;
+
+	public CannotConvertException() {
     }
 
     public CannotConvertException(String message) {
