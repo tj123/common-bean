@@ -9,6 +9,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * 注解的包裹类
@@ -207,12 +208,12 @@ public class AnnotationWrapper {
             }
         } else if (is(ValidRegExp.class)) {
             if (fieldWrapper.isNotBlank()) {
-                if (!fieldWrapper.getStringValue().matches(value()))
+                if (!Pattern.compile(value()).matcher(fieldWrapper.getStringValue()).find())
                     throw new NotValidException(this, fieldWrapper);
             }
         } else if (is(InvalidRegExp.class)) {
             if (fieldWrapper.isNotBlank()) {
-                if (fieldWrapper.getStringValue().matches(value()))
+                if (Pattern.compile(value()).matcher(fieldWrapper.getStringValue()).find())
                     throw new NotValidException(this, fieldWrapper);
             }
         } else if (is(MinLength.class)) {

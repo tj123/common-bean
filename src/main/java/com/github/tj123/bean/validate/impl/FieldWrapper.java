@@ -1,6 +1,5 @@
 package com.github.tj123.bean.validate.impl;
 
-import com.github.tj123.bean.validate.NotValidException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

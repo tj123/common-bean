@@ -1,6 +1,8 @@
 package com.github.tj123.bean.validate;
 
+import com.github.tj123.bean.DatePattern;
 import com.github.tj123.bean.validate.impl.FieldWrapper;
+import com.github.tj123.bean.validate.impl.NotValidException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -34,6 +36,7 @@ public class ValidateUtil {
     public static final String QQ_DEFAULT_MESSAGE = "字段：{field} 格式不正确";
     public static final String VALIDATE_METHOD_DEFAULT_ERROR = "字段：{field} 错误";
     public static final String DATE_PATTERN_DEFAULT_MESSAGE = "字段：{field} 日期格式错误";
+    public static final String NOT_BLANK_DEFAULT_MESSAGE = "字段：{field} 不能为空";
 
     public static final int LOWEST_PRIORITY = 30;
 
@@ -48,6 +51,7 @@ public class ValidateUtil {
     public static final int TEL_DEFAULT_PRIORITY = 4;
     public static final int VALIDATE_METHOD_DEFAULT_PRIORITY = 2;
     public static final int VALID_REGEXP_DEFAULT_PRIORITY = 2;
+    public static final int NOT_BLANK_DEFAULT_PRIORITY = 1;
 
 
     /**
@@ -62,7 +66,7 @@ public class ValidateUtil {
     @SuppressWarnings("unchecked")
 	public static final Class<? extends Annotation>[] annotations = new Class[]{Email.class,
             InvalidRegExp.class, MaxLength.class, MinLength.class, NotNull.class, Phone.class,
-            QQ.class, Tel.class, ValidateMethod.class, ValidRegExp.class};
+            QQ.class, Tel.class, ValidateMethod.class, ValidRegExp.class, DatePattern.class};
 
     /**
      * 验证

@@ -1,6 +1,8 @@
 package com.github.tj123.bean.validate;
 
 
+import com.github.tj123.bean.validate.impl.NotValidException;
+
 /**
  * 验证 字段 调用接口
  * @author TJ

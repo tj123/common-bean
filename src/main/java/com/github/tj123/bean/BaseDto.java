@@ -1,7 +1,7 @@
 package com.github.tj123.bean;
 
 
-import com.github.tj123.bean.validate.NotValidException;
+import com.github.tj123.bean.validate.impl.NotValidException;
 import com.github.tj123.bean.validate.ValidateUtil;
 
 import java.lang.reflect.ParameterizedType;
