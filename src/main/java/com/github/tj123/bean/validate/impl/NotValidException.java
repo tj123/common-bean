@@ -2,10 +2,7 @@ package com.github.tj123.bean.validate.impl;
 
 import com.github.tj123.bean.validate.ValidateUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 校验错误的返回对象
@@ -156,11 +153,16 @@ public class NotValidException extends Exception {
         Errors errors = getErrors();
         Map<String,List<String>> map = new HashMap<>();
         for (Map.Entry<String, ArrayList<ErrorMessage>> entry : errors.entrySet()) {
-            List<String> list = new ArrayList<>();
+            Set<String> set = new HashSet<>();
             for (ErrorMessage errorMessage : entry.getValue()) {
-                list.add(errorMessage.getMessage());
+                String message = errorMessage.getMessage();
+                if (!set.contains(message)) {
+                    set.add(message);
+                }
             }
-            map.put(entry.getKey(),list);
+            ArrayList<String> list = new ArrayList<>();
+            list.addAll(set);
+            map.put(entry.getKey(), list);
         }
         return map;
     }

@@ -329,14 +329,14 @@ public class VerifiableAnnotation {
         }else if(is(Max.class)){
             if(field.isNotBlank()){
                 getOnVerifiableAnnotation(Numeric.class).validate(field);
-                if(Double.valueOf(field.getStringValue()) < Double.valueOf(value())){
+                if(Double.valueOf(field.getStringValue()) > Double.valueOf(value())){
                     throw new NotValidException(this, field);
                 }
             }
         }else if(is(Min.class)) {
             if (field.isNotBlank()) {
                 getOnVerifiableAnnotation(Numeric.class).validate(field);
-                if (Double.valueOf(field.getStringValue()) > Double.valueOf(value())) {
+                if (Double.valueOf(field.getStringValue()) < Double.valueOf(value())) {
                     throw new NotValidException(this, field);
                 }
             }

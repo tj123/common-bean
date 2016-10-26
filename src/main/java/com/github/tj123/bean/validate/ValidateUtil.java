@@ -44,8 +44,8 @@ public class ValidateUtil {
     public static final String NUMERIC_DEFAULT_MESSAGE = "只能为数字";
     public static final String ASSERT_DEFAULT_MESSAGE = "只能为{annoValues}";
     public static final String ASSERT_BLANK_DEFAULT_MESSAGE = "只能为空";
-    public static final String MIN_DEFAULT_MESSAGE = "不能大于{annoValue}";
-    public static final String MAX_DEFAULT_MESSAGE = "不能小于{annoValue}";
+    public static final String MIN_DEFAULT_MESSAGE = "不能小于{annoValue}";
+    public static final String MAX_DEFAULT_MESSAGE = "不能大于{annoValue}";
     public static final String PAST_DEFAULT_MESSAGE = "時間已經過了";
     public static final String FUTURE_DEFAULT_MESSAGE = "還沒有到呢";
     public static final String IN_ENUM_DEFAULT_MESSAGE = "值不包含在{annoValues}中";
