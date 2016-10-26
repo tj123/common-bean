@@ -3,6 +3,8 @@ package com.github.tj123.bean.validate.impl;
 import com.github.tj123.bean.validate.ValidateUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -144,6 +146,23 @@ public class NotValidException extends Exception {
             }
         }
         return this;
+    }
+
+    /**
+     * 获取错误消息
+     * @return
+     */
+    public Map<String,List<String>> errors(){
+        Errors errors = getErrors();
+        Map<String,List<String>> map = new HashMap<>();
+        for (Map.Entry<String, ArrayList<ErrorMessage>> entry : errors.entrySet()) {
+            List<String> list = new ArrayList<>();
+            for (ErrorMessage errorMessage : entry.getValue()) {
+                list.add(errorMessage.getMessage());
+            }
+            map.put(entry.getKey(),list);
+        }
+        return map;
     }
 
 }

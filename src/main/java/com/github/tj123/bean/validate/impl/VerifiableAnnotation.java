@@ -75,6 +75,24 @@ public class VerifiableAnnotation {
     }
 
     /**
+     * 获取注解的 value();
+     *
+     * @return
+     */
+    public String[] values() {
+        try {
+            Method method = annotationClass.getMethod("value");
+            Object invoke = method.invoke(annotation);
+            if (invoke == null) {
+                return null;
+            }
+            return (String[])invoke;
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    /**
      * 获取注解的 message();
      *
      * @return

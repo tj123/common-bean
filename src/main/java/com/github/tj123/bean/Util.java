@@ -12,8 +12,6 @@ import java.util.UUID;
  */
 class Util {
 
-    //private static Log log = LogFactory.getLog(Util.class);
-
     /**
      * 获取值
      */

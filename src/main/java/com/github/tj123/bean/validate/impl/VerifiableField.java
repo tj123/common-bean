@@ -112,14 +112,35 @@ public class VerifiableField {
      * @param value
      * @return
      */
-    public String format(String value, VerifiableAnnotation annotation) {
-        message.put("annoValue", String.valueOf(annotation.value()));
+    public String format(String value, VerifiableAnnotation annotation,Integer location) {
+        String[] values = annotation.values();
+        if (location == null) {
+            message.put("annoValue", String.valueOf(annotation.value()));
+        }else{
+            String va = values[location];
+            if (va == null && va.trim().equals("")) {
+                Message message = field.getAnnotation(Message.class);
+                if (message.value() != null) {
+                    va = message.value();
+                }
+            }
+            message.put("annoValue", String.valueOf(va));
+        }
+        if (values != null) {
+            StringBuilder sb = new StringBuilder();
+            for (String val : values) {
+                sb.append(val).append(",");
+            }
+            sb.deleteCharAt(sb.length()-1);
+            message.put("annoValues",sb.toString());
+        }
+
         Pattern pattern = Pattern.compile("\\{[^\\{\\}]*\\}");
         Matcher matcher = pattern.matcher(value);
         while (matcher.find()) {
             String group = matcher.group();
             String key = group.substring(1, group.length() - 1).trim();
-            value = value.replace(group, message.get(key));
+            value = value.replace(group, String.valueOf(message.get(key)));
         }
         return value;
     }
@@ -132,7 +153,7 @@ public class VerifiableField {
         if(field == null) return "";
         Message message = field.getAnnotation(Message.class);
         if (message != null) {
-            return message.message();
+            return message.value();
         }
         return "";
     }
@@ -145,9 +166,9 @@ public class VerifiableField {
     public String getMessage(VerifiableAnnotation annotation){
         String message = annotation.message();
         if (message != null && !message.trim().equals("")) {
-            return format(message,annotation);
+            return format(message,annotation,null);
         }
-        return format(getAnnotationMessage(),annotation);
+        return format(getAnnotationMessage(),annotation,null);
     }
 
     /**
@@ -160,10 +181,10 @@ public class VerifiableField {
         if(messages != null){
             String message = messages[location];
             if (message != null && !message.trim().equals("")) {
-                return format(message,annotation);
+                return format(message,annotation,location);
             }
         }
-        return format(getAnnotationMessage(),annotation);
+        return format(getAnnotationMessage(),annotation,location);
     }
 
     /**
