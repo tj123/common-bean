@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Numeric
 public @interface Max {
 
-    int value();
+    double value();
 
     String message() default ValidateUtil.MAX_DEFAULT_MESSAGE;
 

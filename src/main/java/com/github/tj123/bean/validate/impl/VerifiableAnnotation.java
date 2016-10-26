@@ -254,6 +254,20 @@ public class VerifiableAnnotation {
             if (field.isNull()) {
                 throw new NotValidException(this, field);
             }
+        } else if (is(NotBlank.class)) {
+            if (field.isNull()) {
+                throw new NotValidException(this, field);
+            }else{
+                NotBlank notBlank = castTo(NotBlank.class);
+                String stringValue = field.getStringValue();
+                if (notBlank.trim()) {
+                    stringValue = stringValue.trim();
+                }
+                if("".equals(stringValue)){
+                    throw new NotValidException(this, field);
+                }
+
+            }
         } else if (is(ValidRegExp.class)) {
             if (field.isNotBlank()) {
                 ValidRegExp validRegExp = castTo(ValidRegExp.class);
