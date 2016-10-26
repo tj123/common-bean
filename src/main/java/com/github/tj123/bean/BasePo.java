@@ -10,8 +10,6 @@ import java.lang.reflect.ParameterizedType;
 @SuppressWarnings({ "serial", "unchecked" })
 public abstract class BasePo<DTO extends BaseDto<?>> extends BaseBean implements Po<DTO> {
 
-    //private Log log = LogFactory.getLog(BasePo.class);
-
     /**
      * 转 DTO
      *

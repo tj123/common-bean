@@ -15,4 +15,6 @@ public @interface NotBlank {
 
     int priority() default ValidateUtil.NOT_BLANK_DEFAULT_PRIORITY;
 
+    boolean trim() default true;
+
 }

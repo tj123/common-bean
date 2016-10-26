@@ -10,9 +10,9 @@ import java.lang.annotation.*;
 @Documented
 public @interface AssertBlank {
 
-    String message() default ValidateUtil.NOT_BLANK_DEFAULT_MESSAGE;
+    String message() default ValidateUtil.ASSERT_BLANK_DEFAULT_MESSAGE;
 
-    int priority() default ValidateUtil.NOT_BLANK_DEFAULT_PRIORITY;
+    int priority() default ValidateUtil.ASSERT_BLANK_DEFAULT_PRIORITY;
 
     boolean trim() default true;
 

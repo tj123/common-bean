@@ -13,8 +13,6 @@ import java.lang.reflect.ParameterizedType;
 @SuppressWarnings({ "serial", "unchecked" })
 public abstract class BaseDto<PO extends BasePo<?>> extends BaseBean implements Dto<PO> {
 
-    //private Log log = LogFactory.getLog(BaseDto.class);
-
     /**
      * 转 PO
      *
@@ -43,8 +41,30 @@ public abstract class BaseDto<PO extends BasePo<?>> extends BaseBean implements 
      * @return
      */
     public <DTO extends BaseDto<?>> DTO validate() throws NotValidException {
-    	DTO dto = (DTO) this;
+        DTO dto = (DTO) this;
         ValidateUtil.validate(dto);
+        return dto;
+    }
+
+    /**
+     * 只验证一個字段
+     *
+     * @return
+     */
+    public <DTO extends BaseDto<?>> DTO validate(String fieldName) throws NotValidException {
+        DTO dto = (DTO) this;
+        ValidateUtil.validate(dto,fieldName);
+        return dto;
+    }
+
+    /**
+     * 只验证多個字段
+     *
+     * @return
+     */
+    public <DTO extends BaseDto<?>> DTO validate(String... fieldNames) throws NotValidException {
+        DTO dto = (DTO) this;
+        ValidateUtil.validate(dto,fieldNames);
         return dto;
     }
 

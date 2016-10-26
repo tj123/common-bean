@@ -8,13 +8,13 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Assert {
+public @interface InEnum {
 
-    String value()[];
+    Class<? extends Enum<?>> value()[];
 
-    String message() default ValidateUtil.ASSERT_DEFAULT_MESSAGE;
+    String message() default ValidateUtil.IN_ENUM_DEFAULT_MESSAGE;
 
-    int priority() default ValidateUtil.ASSERT_DEFAULT_PRIORITY;
+    int priority() default ValidateUtil.IN_ENUM_DEFAULT_PRIORITY;
 
     boolean trim() default true;
 

@@ -11,9 +11,9 @@ import java.lang.annotation.*;
 @Documented
 public @interface InvalidRegExp {
 
-    String value();
+    String value()[];
 
-    String message() default ValidateUtil.INVALID_REGEXP_DEFAULT_MESSAGE;
+    String message()[] default ValidateUtil.INVALID_REGEXP_DEFAULT_MESSAGE;
 
     int priority() default ValidateUtil.INVALID_REGEXP_DEFAULT_PRIORITY;
 }

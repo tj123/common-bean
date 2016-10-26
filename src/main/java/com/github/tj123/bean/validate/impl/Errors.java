@@ -15,13 +15,14 @@ public class Errors extends HashMap<String, ArrayList<ErrorMessage>> {
      */
     public void sort() {
         for (Map.Entry<String, ArrayList<ErrorMessage>> entry : entrySet()) {
-            List<ErrorMessage> value = entry.getValue();
+            ArrayList<ErrorMessage> value = entry.getValue();
             Collections.sort(value, new Comparator<ErrorMessage>() {
                 @Override
                 public int compare(ErrorMessage msg1, ErrorMessage msg2) {
                     return msg1.getPriority() - msg2.getPriority();
                 }
             });
+            put(entry.getKey(),value);
         }
     }
 

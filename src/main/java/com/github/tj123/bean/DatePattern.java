@@ -1,5 +1,6 @@
 package com.github.tj123.bean;
 
+import com.github.tj123.bean.validate.Validate;
 import com.github.tj123.bean.validate.ValidateUtil;
 
 import java.lang.annotation.Documented;
@@ -18,7 +19,9 @@ import java.lang.annotation.Target;
 @Documented
 public @interface DatePattern {
 	
-	String value();
+	String value() default BeanConfig.DEFAULT_DATE_PATTEN;
 
 	String message() default ValidateUtil.DATE_PATTERN_DEFAULT_MESSAGE;
+
+	int priority() default ValidateUtil.LOWEST_PRIORITY;
 }

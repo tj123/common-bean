@@ -1,5 +1,6 @@
 package com.github.tj123.bean.validate.impl;
 
+import com.github.tj123.bean.validate.Message;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -15,21 +16,21 @@ import java.util.regex.Pattern;
 /**
  * 字段的包装类
  */
-public class FieldWrapper {
+public class VerifiableField {
 
-    private Log log = LogFactory.getLog(FieldWrapper.class);
+    private Log log = LogFactory.getLog(VerifiableField.class);
 
-    public FieldWrapper() {
+    public VerifiableField() {
     }
 
-    public FieldWrapper(Field field, Object fieldValue) {
+    public VerifiableField(Field field, Object fieldValue) {
         setField(field, fieldValue);
     }
 
     private Field field;
     private Object fieldValue;
     private String fieldStringValue;
-    private List<AnnotationWrapper> annotationWrappers;
+    private List<VerifiableAnnotation> annotations;
     private Map<String, String> message = new HashMap<>();
 
     public void setField(Field field, Object fieldValue) {
@@ -38,8 +39,8 @@ public class FieldWrapper {
         this.fieldStringValue = String.valueOf(fieldValue);
         message.put("field", field.getName());
         message.put("value", getFieldStringValue());
-        if (annotationWrappers != null) {
-            annotationWrappers.clear();
+        if (annotations != null) {
+            annotations.clear();
         }
     }
 
@@ -54,21 +55,21 @@ public class FieldWrapper {
                 log.error("必须先调用setField()",new Exception("必须先调用setField()"));
             }
         }
-        if (annotationWrappers == null) {
-            annotationWrappers = new ArrayList<>();
+        if (annotations == null) {
+            annotations = new ArrayList<>();
         }
         for (Class<? extends Annotation> clazz : classes) {
             Annotation annotation = field.getAnnotation(clazz);
-            annotationWrappers.add(new AnnotationWrapper(annotation, clazz));
+            annotations.add(new VerifiableAnnotation(annotation, clazz));
         }
     }
 
-    public void setAnnotationWrappers(List<AnnotationWrapper> annotationWrappers) {
-        this.annotationWrappers = annotationWrappers;
+    public void setAnnotations(List<VerifiableAnnotation> annotations) {
+        this.annotations = annotations;
     }
 
-    public List<AnnotationWrapper> getAnnotationWrappers() {
-        return annotationWrappers;
+    public List<VerifiableAnnotation> getAnnotations() {
+        return annotations;
     }
 
     public Object getFieldValue() {
@@ -111,8 +112,8 @@ public class FieldWrapper {
      * @param value
      * @return
      */
-    public String format(String value, AnnotationWrapper wrapper) {
-        message.put("annoValue", String.valueOf(wrapper.value()));
+    public String format(String value, VerifiableAnnotation annotation) {
+        message.put("annoValue", String.valueOf(annotation.value()));
         Pattern pattern = Pattern.compile("\\{[^\\{\\}]*\\}");
         Matcher matcher = pattern.matcher(value);
         while (matcher.find()) {
@@ -124,11 +125,53 @@ public class FieldWrapper {
     }
 
     /**
+     * 获取注解上的消息
+     * @return
+     */
+    public String getAnnotationMessage(){
+        if(field == null) return "";
+        Message message = field.getAnnotation(Message.class);
+        if (message != null) {
+            return message.message();
+        }
+        return "";
+    }
+
+    /**
+     * 获取消息
+     * @param annotation
+     * @return
+     */
+    public String getMessage(VerifiableAnnotation annotation){
+        String message = annotation.message();
+        if (message != null && !message.trim().equals("")) {
+            return format(message,annotation);
+        }
+        return format(getAnnotationMessage(),annotation);
+    }
+
+    /**
+     * 获取消息
+     * @param annotation
+     * @return
+     */
+    public String getMessage(VerifiableAnnotation annotation,int location){
+        String[] messages = annotation.messages();
+        if(messages != null){
+            String message = messages[location];
+            if (message != null && !message.trim().equals("")) {
+                return format(message,annotation);
+            }
+        }
+        return format(getAnnotationMessage(),annotation);
+    }
+
+    /**
      * 字段验证
      */
     public void validate(boolean checkAll) throws NotValidException{
         NotValidException notValidException = null;
-        for (AnnotationWrapper annotationWrapper : annotationWrappers) {
+        for (VerifiableAnnotation annotationWrapper : annotations) {
             try {
                 annotationWrapper.validate(this);
             } catch (NotValidException e) {
