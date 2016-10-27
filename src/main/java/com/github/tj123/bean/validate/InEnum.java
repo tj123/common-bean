@@ -4,6 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * 字段必须为值
+ * 可以用的字段 有 {field} {value} {annoValue} {annoValues} {enumKeys} {enumValues}
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)

@@ -1,9 +1,9 @@
 package com.github.tj123.bean.validate;
 
 import com.github.tj123.bean.DatePattern;
+import com.github.tj123.bean.validate.impl.NotValidException;
 import com.github.tj123.bean.validate.impl.VerifiableAnnotation;
 import com.github.tj123.bean.validate.impl.VerifiableField;
-import com.github.tj123.bean.validate.impl.NotValidException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -11,6 +11,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -31,9 +32,10 @@ public class ValidateUtil {
 
     public static final String MIN_LENGTH_DEFAULT_MESSAGE = "长度不能小于{annoValue}";
     public static final String MAX_LENGTH_DEFAULT_MESSAGE = "长度不能大于{annoValue}";
+    public static final String LENGTH_DEFAULT_MESSAGE = "长度只能为{annoValue}";
     public static final String EMAIL_DEFAULT_MESSAGE = "邮箱格式错误";
-    public static final String VALID_REGEXP_DEFAULT_MESSAGE = "{value} 格式不符合要求";
-    public static final String INVALID_REGEXP_DEFAULT_MESSAGE = "{value} 格式不符合要求";
+    public static final String VALID_REGEXP_DEFAULT_MESSAGE = "包含非法字符";
+    public static final String INVALID_REGEXP_DEFAULT_MESSAGE = "格式不符合要求";
     public static final String NOTNULL_DEFAULT_MESSAGE = "不能为空";
     public static final String PHONE_DEFAULT_MESSAGE = "格式不正确";
     public static final String TEL_DEFAULT_MESSAGE = "格式不正确";
@@ -46,8 +48,8 @@ public class ValidateUtil {
     public static final String ASSERT_BLANK_DEFAULT_MESSAGE = "只能为空";
     public static final String MIN_DEFAULT_MESSAGE = "不能小于{annoValue}";
     public static final String MAX_DEFAULT_MESSAGE = "不能大于{annoValue}";
-    public static final String PAST_DEFAULT_MESSAGE = "時間已經過了";
-    public static final String FUTURE_DEFAULT_MESSAGE = "還沒有到呢";
+    public static final String PAST_DEFAULT_MESSAGE = "不能超过当前时间";
+    public static final String FUTURE_DEFAULT_MESSAGE = "只能在当前时间之后";
     public static final String IN_ENUM_DEFAULT_MESSAGE = "值不包含在{annoValues}中";
 
     public static final int LOWEST_PRIORITY = 30;
@@ -72,23 +74,24 @@ public class ValidateUtil {
     public static final int PAST_DEFAULT_PRIORITY = 6;
     public static final int FUTURE_DEFAULT_PRIORITY = 6;
     public static final int IN_ENUM_DEFAULT_PRIORITY = 6;
+    public static final int LENGTH_DEFAULT_PRIORITY = 2;
 
 
     /**
      * 日期转换
      */
-    public static Date stringToDate(String date, String pattern) throws Exception {
+    public static Date stringToDate(String date, String pattern) throws ParseException {
         return new SimpleDateFormat(pattern).parse(date);
     }
 
     private static final Log log = LogFactory.getLog(ValidateUtil.class);
 
     @SuppressWarnings("unchecked")
-	public static final Class<? extends Annotation>[] ANNOTATIONS = new Class[]{Email.class,
+    public static final Class<? extends Annotation>[] ANNOTATIONS = new Class[]{Email.class,
             InvalidRegExp.class, MaxLength.class, MinLength.class, NotNull.class, Phone.class,
             QQ.class, Tel.class, ValidateMethod.class, ValidRegExp.class, DatePattern.class,
-            Assert.class,AssertBlank.class,Max.class,Min.class,NotBlank.class,Past.class,
-            Future.class,InEnum.class,Numeric.class};
+            Assert.class, AssertBlank.class, Max.class, Min.class, NotBlank.class, Past.class,
+            Future.class, InEnum.class, Numeric.class,Length.class};
 
     /**
      * 验证
@@ -131,18 +134,18 @@ public class ValidateUtil {
             try {
                 validateField(value, verifiableField, field, checkAll);
             } catch (NotValidException e) {
-                if(checkAll){
+                if (checkAll) {
                     if (notValidException == null) {
                         notValidException = e;
-                    }else {
+                    } else {
                         notValidException.merge(e);
                     }
-                }else {
+                } else {
                     throw e;
                 }
             }
         }
-        if(notValidException != null && notValidException.hasError()){
+        if (notValidException != null && notValidException.hasError()) {
             throw notValidException;
         }
     }
@@ -154,7 +157,7 @@ public class ValidateUtil {
      * @param <V>
      */
     public static <V> void validate(V value, String... fieldNames) throws NotValidException {
-        validate(value,fieldNames,true);
+        validate(value, fieldNames, true);
     }
 
     /**
@@ -164,23 +167,36 @@ public class ValidateUtil {
      * @param <V>
      */
     public static <V> void validate(V value, String[] fieldNames, boolean checkAll) throws NotValidException {
+        Class<?> clazz = value.getClass();
+        if (clazz.getAnnotation(Validate.class) == null) {
+            if (log.isWarnEnabled()) {
+                log.warn(clazz + "忽略校验!");
+            }
+            return;
+        }
         NotValidException notValidException = null;
+        VerifiableField verifiableField = new VerifiableField();
         for (String fieldName : fieldNames) {
             try {
-                validate(value,fieldName,checkAll);
+                Field field = clazz.getDeclaredField(fieldName);
+                validateField(value, verifiableField, field, checkAll);
             } catch (NotValidException e) {
-                if(checkAll){
+                if (checkAll) {
                     if (notValidException == null) {
                         notValidException = e;
-                    }else {
+                    } else {
                         notValidException.merge(e);
                     }
-                }else {
+                } else {
                     throw e;
+                }
+            } catch (NoSuchFieldException e) {
+                if (log.isErrorEnabled()) {
+                    log.error(e.getMessage(), e);
                 }
             }
         }
-        if(notValidException != null && notValidException.hasError()){
+        if (notValidException != null && notValidException.hasError()) {
             throw notValidException;
         }
     }
@@ -205,8 +221,8 @@ public class ValidateUtil {
             VerifiableField verifiableField = new VerifiableField();
             validateField(value, verifiableField, field, checkAll);
         } catch (NoSuchFieldException e) {
-            if(log.isErrorEnabled()){
-                log.error(e.getMessage(),e);
+            if (log.isErrorEnabled()) {
+                log.error(e.getMessage(), e);
             }
         }
     }
@@ -222,7 +238,7 @@ public class ValidateUtil {
      * @throws NotValidException
      */
     @SuppressWarnings("unused")
-	private static <V> void validateField(V value, VerifiableField verifiableField, Field field, boolean checkAll) throws NotValidException {
+    private static <V> void validateField(V value, VerifiableField verifiableField, Field field, boolean checkAll) throws NotValidException {
         field.setAccessible(true);
         Object fieldValue = null;
         NotValidException notValidException = null;
@@ -238,23 +254,24 @@ public class ValidateUtil {
         try {
             verifiableField.validate(checkAll);
         } catch (NotValidException e) {
-            if(checkAll){
+            if (checkAll) {
                 if (notValidException == null) {
                     notValidException = e;
-                }else {
+                } else {
                     notValidException.merge(e);
                 }
-            }else {
+            } else {
                 throw e;
             }
         }
-        if(notValidException != null && notValidException.hasError()){
+        if (notValidException != null && notValidException.hasError()) {
             throw notValidException;
         }
     }
 
     /**
      * 驗證枚舉
+     *
      * @param values
      * @param stringValue
      * @param annotation
@@ -263,10 +280,10 @@ public class ValidateUtil {
      */
     public static void checkInNum(Class<? extends Enum<?>>[] values,
                                   String stringValue, VerifiableAnnotation annotation, VerifiableField field)
-            throws NotValidException{
+            throws NotValidException {
         for (Class<? extends Enum<?>> value : values) {
-            for (Annotation anno : value.getAnnotations()) {
-                if(String.valueOf(anno).equals(stringValue))
+            for (Enum<?> anEnum : value.getEnumConstants()) {
+                if (String.valueOf(anEnum).equals(stringValue))
                     return;
             }
         }
@@ -274,18 +291,81 @@ public class ValidateUtil {
             String va = null;
             try {
                 Method method = value.getMethod("getKey");
-                for (Annotation anno : value.getAnnotations()) {
-                    Object invoke = method.invoke(anno);
+                for (Enum<?> anEnum : value.getEnumConstants()) {
+                    Object invoke = method.invoke(anEnum);
                     if (String.valueOf(invoke).equals(stringValue)) {
                         return;
                     }
                 }
-                throw new NotValidException(annotation,field);
+                throw new NotValidException(annotation, field);
             } catch (NoSuchMethodException e) {
             } catch (InvocationTargetException e) {
             } catch (IllegalAccessException e) {
             }
         }
+    }
+
+    /**
+     * 获取枚举的所有值
+     *
+     * @param value
+     * @return
+     */
+    public static String getEnumKeyValues(Class<? extends Enum<?>>[] value) {
+        StringBuilder sb = new StringBuilder();
+        for (Class<? extends Enum<?>> clazz : value) {
+            for (Enum<?> envm : clazz.getEnumConstants()) {
+                sb.append(String.valueOf(envm)).append(",");
+            }
+        }
+        for (Class<? extends Enum<?>> clazz : value) {
+            for (Enum<?> envm : clazz.getEnumConstants()) {
+                try {
+                    Method method = clazz.getMethod("getKey");
+                    sb.append(String.valueOf(method.invoke(envm))).append(",");
+                } catch (Exception e) {
+                }
+            }
+        }
+        return sb.deleteCharAt(sb.length() - 1).toString();
+    }
+
+    /**
+     * 获取枚举的values
+     *
+     * @param value
+     * @return
+     */
+    public static String getEnumValues(Class<? extends Enum<?>>[] value) {
+        StringBuilder sb = new StringBuilder();
+        for (Class<? extends Enum<?>> clazz : value) {
+            for (Enum<?> envm : clazz.getEnumConstants()) {
+                sb.append(String.valueOf(envm)).append(",");
+            }
+        }
+        return sb.deleteCharAt(sb.length() - 1).toString();
+
+    }
+
+    /**
+     * 获取枚举的所有key值
+     *
+     * @param value
+     * @return
+     */
+    public static String getEnumKeys(Class<? extends Enum<?>>[] value) {
+        StringBuilder sb = new StringBuilder();
+        for (Class<? extends Enum<?>> clazz : value) {
+            for (Enum<?> envm : clazz.getEnumConstants()) {
+                try {
+                    Method method = clazz.getMethod("getKey");
+                    sb.append(String.valueOf(method.invoke(envm))).append(",");
+                } catch (Exception e) {
+                }
+            }
+        }
+        return sb.deleteCharAt(sb.length() - 1).toString();
+
     }
 }
 

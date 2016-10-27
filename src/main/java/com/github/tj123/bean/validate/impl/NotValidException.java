@@ -44,8 +44,8 @@ public class NotValidException extends Exception {
         addError(field, ValidateUtil.VALIDATE_METHOD_DEFAULT_PRIORITY, message);
     }
 
-    public NotValidException(VerifiableAnnotation annotationWrapper, VerifiableField verifiableField) {
-        addError(annotationWrapper, verifiableField);
+    public NotValidException(VerifiableAnnotation verifiableAnnotation, VerifiableField verifiableField) {
+        addError(verifiableAnnotation, verifiableField);
     }
 
     public NotValidException(VerifiableAnnotation annotationWrapper, VerifiableField verifiableField,int location) {
@@ -113,7 +113,7 @@ public class NotValidException extends Exception {
      * @return
      */
     public NotValidException addError(VerifiableAnnotation annotation, VerifiableField field,int location) {
-        addError(field.getField().getName(), annotation.priority(), field.getMessage(annotation,location));
+        addError(field.getField().getName(), annotation.priority(), field.getMessage(annotation, location));
         return this;
     }
 

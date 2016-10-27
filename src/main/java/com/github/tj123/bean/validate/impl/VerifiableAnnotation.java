@@ -1,5 +1,6 @@
 package com.github.tj123.bean.validate.impl;
 
+import com.github.tj123.bean.BeanConfig;
 import com.github.tj123.bean.DatePattern;
 import com.github.tj123.bean.validate.*;
 import org.apache.commons.logging.Log;
@@ -7,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -259,20 +261,17 @@ public class VerifiableAnnotation {
                 throw new NotValidException(this, field);
             }else{
                 NotBlank notBlank = castTo(NotBlank.class);
-                String stringValue = field.getStringValue();
-                if (notBlank.trim()) {
-                    stringValue = stringValue.trim();
-                }
+                String stringValue = field.getStringValue(notBlank.trim());
                 if("".equals(stringValue)){
                     throw new NotValidException(this, field);
                 }
 
             }
         } else if (is(ValidRegExp.class)) {
-            if (field.isNotBlank()) {
+            if (field.isNotNull()) {
                 ValidRegExp validRegExp = castTo(ValidRegExp.class);
                 String[] values = validRegExp.value();
-                String stringValue = field.getStringValue();
+                String stringValue = field.getStringValue(validRegExp.trim());
                 NotValidException exception = new NotValidException();
                 for (int i = 0; i < values.length; i++) {
                     if (!Pattern.compile(values[i]).matcher(stringValue).find())
@@ -283,10 +282,10 @@ public class VerifiableAnnotation {
                 }
             }
         } else if (is(InvalidRegExp.class)) {
-            if (field.isNotBlank()) {
+            if (field.isNotNull()) {
                 InvalidRegExp invalidRegExp = castTo(InvalidRegExp.class);
                 String[] values = invalidRegExp.value();
-                String stringValue = field.getStringValue();
+                String stringValue = field.getStringValue(invalidRegExp.trim());
                 NotValidException exception = new NotValidException();
                 for (int i = 0; i < values.length; i++) {
                     if (Pattern.compile(values[i]).matcher(stringValue).find())
@@ -297,19 +296,31 @@ public class VerifiableAnnotation {
                 }
             }
         } else if (is(MinLength.class)) {
-            if (field.isNotBlank()) {
-                if (field.getStringValue().length() < Integer.valueOf(value())) {
+            if (field.isNotNull()) {
+                MinLength minLength = castTo(MinLength.class);
+                String stringValue = field.getStringValue(minLength.trim());
+                if (stringValue.length() < minLength.value()) {
                     throw new NotValidException(this, field);
                 }
             }
         } else if (is(MaxLength.class)) {
-            if (field.isNotBlank()) {
-                if (field.getStringValue().length() > Integer.valueOf(value())) {
+            if (field.isNotNull()) {
+                MaxLength maxLength = castTo(MaxLength.class);
+                String stringValue = field.getStringValue(maxLength.trim());
+                if (stringValue.length() > maxLength.value()) {
+                    throw new NotValidException(this, field);
+                }
+            }
+        } else if (is(Length.class)) {
+            if (field.isNotNull()) {
+                Length length = castTo(Length.class);
+                String stringValue = field.getStringValue(length.trim());
+                if (stringValue.length() != length.value()) {
                     throw new NotValidException(this, field);
                 }
             }
         } else if (is(ValidateMethod.class)) {
-            ValidateMethod validateMethod = (ValidateMethod) getAnnotation();
+            ValidateMethod validateMethod = castTo(ValidateMethod.class);
             Class<? extends Checkable> value = validateMethod.value();
             try {
                 value.newInstance().check(field.getFieldValue());
@@ -341,23 +352,17 @@ public class VerifiableAnnotation {
                 }
             }
         }else if(is(AssertBlank.class)){
-            if (field.getFieldValue() != null) {
+            if (field.isNotNull()) {
                 AssertBlank assertBlank = castTo(AssertBlank.class);
-                String stringValue = field.getStringValue();
-                if (assertBlank.trim()) {
-                    stringValue = stringValue.trim();
-                }
+                String stringValue = field.getStringValue(assertBlank.trim());
                 if (!"".equals(stringValue)) {
                     throw new NotValidException(this, field);
                 }
             }
         }else if(is(Assert.class)){
-            if (field.getFieldValue() != null) {
+            if (field.isNotNull()) {
                 Assert anAssert = castTo(Assert.class);
-                String stringValue = field.getStringValue();
-                if (anAssert.trim()) {
-                    stringValue = stringValue.trim();
-                }
+                String stringValue = field.getStringValue(anAssert.trim());
                 boolean has = false;
                 for (String value : anAssert.value()) {
                     if (stringValue.equals(value)) {
@@ -372,32 +377,43 @@ public class VerifiableAnnotation {
         }else if(is(InEnum.class)){
             if (field.isNotBlank()) {
                 InEnum inEnum = castTo(InEnum.class);
-                String stringValue = field.getStringValue();
-                if(inEnum.trim()){
-                    stringValue = stringValue.trim();
-                }
+                String stringValue = field.getStringValue(inEnum.trim());
                 ValidateUtil.checkInNum(inEnum.value(),stringValue,this,field);
             }
         }else if(is(Future.class)){
             if (field.isNotBlank()) {
                 try {
-                    Date date = ValidateUtil.stringToDate(field.getStringValue(), value());
-                    if(date.getTime() < System.currentTimeMillis()){
-                        throw new Exception();
+                    String pattern = BeanConfig.DEFAULT_DATE_PATTEN;
+                    DatePattern datePattern = field.getAnnotation(DatePattern.class);
+                    if (datePattern != null) {
+                        pattern = datePattern.value();
                     }
-                } catch (Exception e) {
-                    throw new NotValidException(this, field);
+                    Date date = ValidateUtil.stringToDate(field.getStringValue(), pattern);
+                    if(date.getTime() < System.currentTimeMillis()){
+                        throw new NotValidException(this, field);
+                    }
+                } catch (ParseException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("日期格式错误",e);
+                    }
                 }
             }
         }else if(is(Past.class)){
             if (field.isNotBlank()) {
                 try {
-                    Date date = ValidateUtil.stringToDate(field.getStringValue(), value());
-                    if(date.getTime() > System.currentTimeMillis()){
-                        throw new Exception();
+                    String pattern = BeanConfig.DEFAULT_DATE_PATTEN;
+                    DatePattern datePattern = field.getAnnotation(DatePattern.class);
+                    if (datePattern != null) {
+                        pattern = datePattern.value();
                     }
-                } catch (Exception e) {
-                    throw new NotValidException(this, field);
+                    Date date = ValidateUtil.stringToDate(field.getStringValue(), pattern);
+                    if(date.getTime() > System.currentTimeMillis()){
+                        throw new NotValidException(this, field);
+                    }
+                } catch (ParseException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("日期格式错误",e);
+                    }
                 }
             }
         } else {

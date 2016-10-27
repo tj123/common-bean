@@ -1,6 +1,8 @@
 package com.github.tj123.bean.validate.impl;
 
+import com.github.tj123.bean.validate.InEnum;
 import com.github.tj123.bean.validate.Message;
+import com.github.tj123.bean.validate.ValidateUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -93,6 +95,14 @@ public class VerifiableField {
     }
 
     /**
+     * 判断是否为空
+     * @return
+     */
+    public boolean isNotNull(){
+        return !isNull();
+    }
+
+    /**
      * 判断字段是否为空
      *
      * @return
@@ -102,9 +112,36 @@ public class VerifiableField {
                 && !fieldStringValue.trim().equals("");
     }
 
+    /**
+     * 获取注解
+     * @param clazz
+     * @param <A>
+     * @return
+     */
+    public <A extends Annotation> A getAnnotation(Class<A> clazz){
+        return field.getAnnotation(clazz);
+    }
+
+    /**
+     * 获取字符串值
+     * @return
+     */
     public String getStringValue() {
         return fieldStringValue;
     }
+
+    /**
+     * 获取字符串值 是否去除空格
+     * @return
+     */
+    public String getStringValue(boolean trim) {
+        String stringValue = getStringValue();
+        if(trim && stringValue != null){
+            stringValue = stringValue.trim();
+        }
+        return stringValue;
+    }
+
 
     /**
      * 正则替换
@@ -115,7 +152,14 @@ public class VerifiableField {
     public String format(String value, VerifiableAnnotation annotation,Integer location) {
         String[] values = annotation.values();
         if (location == null) {
-            message.put("annoValue", String.valueOf(annotation.value()));
+            String vu = String.valueOf(annotation.value());
+            if (Pattern.compile("^\\d+\\.0+$").matcher(vu).find()) {
+                Matcher matcher = Pattern.compile("^\\d+").matcher(vu);
+                if (matcher.find()) {
+                    vu = matcher.group();
+                }
+            }
+            message.put("annoValue", vu);
         }else{
             String va = values[location];
             if (va == null && va.trim().equals("")) {
@@ -134,7 +178,16 @@ public class VerifiableField {
             sb.deleteCharAt(sb.length()-1);
             message.put("annoValues",sb.toString());
         }
-
+        if(annotation.is(InEnum.class)){
+            Class<? extends Enum<?>>[] vues = annotation.castTo(InEnum.class).value();
+            message.put("annoValues", ValidateUtil.getEnumKeyValues(vues));
+            message.put("annoValue", ValidateUtil.getEnumValues(vues));
+            message.put("enumValues", ValidateUtil.getEnumValues(vues));
+            message.put("enumKeys", ValidateUtil.getEnumKeys(vues));
+        }else{
+            message.remove("enumValues");
+            message.remove("enumKeys");
+        }
         Pattern pattern = Pattern.compile("\\{[^\\{\\}]*\\}");
         Matcher matcher = pattern.matcher(value);
         while (matcher.find()) {

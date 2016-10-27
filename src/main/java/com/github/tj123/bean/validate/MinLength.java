@@ -16,4 +16,6 @@ public @interface MinLength {
 
     int priority() default ValidateUtil.MIN_LENGTH_DEFAULT_PRIORITY;
 
+    boolean trim() default true;
+
 }

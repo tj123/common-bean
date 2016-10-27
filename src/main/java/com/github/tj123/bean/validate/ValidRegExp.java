@@ -21,4 +21,6 @@ public @interface ValidRegExp {
 
 	int priority() default ValidateUtil.VALID_REGEXP_DEFAULT_PRIORITY;
 
+	boolean trim() default false;
+
 }

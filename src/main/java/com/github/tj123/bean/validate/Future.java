@@ -3,7 +3,7 @@ package com.github.tj123.bean.validate;
 import java.lang.annotation.*;
 
 /**
- * 最小长度
+ * 以后的时间 不要忘了 还需要一个 @DatePattern
  */
 @Target({ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)

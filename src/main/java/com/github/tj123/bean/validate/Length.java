@@ -8,13 +8,13 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface MaxLength {
+public @interface Length {
 
     int value();
 
-    String message() default ValidateUtil.MAX_LENGTH_DEFAULT_MESSAGE;
+    String message() default ValidateUtil.LENGTH_DEFAULT_MESSAGE;
 
-    int priority() default ValidateUtil.MAX_LENGTH_DEFAULT_PRIORITY;
+    int priority() default ValidateUtil.LENGTH_DEFAULT_PRIORITY;
 
     boolean trim() default true;
 
