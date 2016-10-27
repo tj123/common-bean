@@ -1,6 +1,6 @@
 package com.github.tj123.bean;
 
-import com.github.tj123.bean.validate.Validate;
+import com.github.tj123.bean.convert.BeanConfig;
 import com.github.tj123.bean.validate.ValidateUtil;
 
 import java.lang.annotation.Documented;

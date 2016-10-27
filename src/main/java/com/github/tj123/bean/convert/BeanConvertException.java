@@ -1,4 +1,4 @@
-package com.github.tj123.bean;
+package com.github.tj123.bean.convert;
 
 /**
  * po 转换时的错误

@@ -1,11 +1,10 @@
-package com.github.tj123.bean;
+package com.github.tj123.bean.convert;
 
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * Created by TJ on 2016/9/20.
@@ -66,7 +65,7 @@ class Util {
         } catch (Exception e) {
         }
         if (enumValue == null || enumValue.trim().equals(""))
-            enumValue = Util.stringValue(envm);
+            enumValue = stringValue(envm);
         if (enumValue == null || enumValue.trim().equals(""))
             throw new CannotConvertException(envm + "转换错误！");
         return enumValue;
@@ -83,10 +82,10 @@ class Util {
      */
     public static <E extends Enum<E>, V> E toEnumByKeyOrValue(Class<E> enumClass, V value) throws BeanConvertException {
         try {
-            return Util.toEnum(enumClass, value);
+            return toEnum(enumClass, value);
         } catch (CannotConvertException e) {
             try {
-                return Util.enumValue(enumClass, Util.stringValue(value));
+                return enumValue(enumClass, stringValue(value));
             } catch (CannotConvertException e1) {
                 throw new BeanConvertException(e1);
             }
@@ -108,14 +107,6 @@ class Util {
     }
 
     /**
-     * 生产 UUID
-     * @return
-     */
-    public static String getUUID() {
-        return UUID.randomUUID().toString().replaceAll("-","");
-    }
-
-    /**
      *  日期转换
      */
     public static String dateToString(Date date,String pattern) throws Exception{
@@ -127,6 +118,28 @@ class Util {
      */
     public static Date stringToDate(String date,String pattern) throws Exception{
         return new SimpleDateFormat(pattern).parse(date);
+    }
+
+    /**
+     * 判断是否为父类
+     *
+     * @param supperClass
+     * @param subClass
+     * @return
+     */
+    public static boolean isSuperClass(Class<?> supperClass, Class<?> subClass) {
+        return supperClass.isAssignableFrom(subClass);
+    }
+
+    /**
+     * 判断是否完成了接口
+     *
+     * @param originClass
+     * @param interfaceClass 接口
+     * @return
+     */
+    public static boolean isInterfaceOf(Class<?> interfaceClass, Class<?> originClass) {
+        return isSuperClass(interfaceClass, originClass);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.github.tj123.bean;
+package com.github.tj123.bean.convert;
 
 /**
  * Created by TJ on 2016/9/3.

@@ -1,6 +1,6 @@
 package com.github.tj123.bean.validate.impl;
 
-import com.github.tj123.bean.BeanConfig;
+import com.github.tj123.bean.convert.BeanConfig;
 import com.github.tj123.bean.DatePattern;
 import com.github.tj123.bean.validate.*;
 import org.apache.commons.logging.Log;

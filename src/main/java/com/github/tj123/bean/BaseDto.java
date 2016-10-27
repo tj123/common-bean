@@ -1,6 +1,8 @@
 package com.github.tj123.bean;
 
 
+import com.github.tj123.bean.convert.BeanConvertException;
+import com.github.tj123.bean.convert.BeanUtil;
 import com.github.tj123.bean.validate.impl.NotValidException;
 import com.github.tj123.bean.validate.ValidateUtil;
 

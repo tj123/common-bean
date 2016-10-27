@@ -3,6 +3,9 @@ package com.github.tj123.bean;
 
 
 
+import com.github.tj123.bean.convert.BeanConvertException;
+import com.github.tj123.bean.convert.BeanUtil;
+
 import java.io.Serializable;
 import java.util.Map;
 
@@ -19,7 +22,7 @@ abstract class BaseBean implements Bean,Serializable{
      * @return
      */
     public String getUUID(){
-        return Util.getUUID();
+        return BeanUtil.getUUID();
     }
 
     /**
