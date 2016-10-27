@@ -5,12 +5,12 @@ import java.lang.annotation.*;
 /**
  * 最小长度
  */
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Length {
 
-    int value();
+    int value()[];
 
     String message() default ValidateUtil.LENGTH_DEFAULT_MESSAGE;
 

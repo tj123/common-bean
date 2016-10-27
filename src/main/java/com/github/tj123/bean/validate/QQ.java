@@ -10,7 +10,9 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@ValidRegExp("\\d+")
+@ValidRegExp("^[0-9a-zA-Z_@]+(\\.[a-zA-Z]{1,3})?$")
+@MinLength(4)
+@MaxLength(64)
 public @interface QQ {
 
     String message() default ValidateUtil.QQ_DEFAULT_MESSAGE;

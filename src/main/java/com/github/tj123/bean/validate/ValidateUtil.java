@@ -32,7 +32,7 @@ public class ValidateUtil {
 
     public static final String MIN_LENGTH_DEFAULT_MESSAGE = "长度不能小于{annoValue}";
     public static final String MAX_LENGTH_DEFAULT_MESSAGE = "长度不能大于{annoValue}";
-    public static final String LENGTH_DEFAULT_MESSAGE = "长度只能为{annoValue}";
+    public static final String LENGTH_DEFAULT_MESSAGE = "长度只能为{annoValues}";
     public static final String EMAIL_DEFAULT_MESSAGE = "邮箱格式错误";
     public static final String VALID_REGEXP_DEFAULT_MESSAGE = "包含非法字符";
     public static final String INVALID_REGEXP_DEFAULT_MESSAGE = "格式不符合要求";

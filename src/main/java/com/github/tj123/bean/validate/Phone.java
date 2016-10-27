@@ -13,7 +13,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@ValidRegExp("\\d{11}")
+@ValidRegExp("^\\d{11}$")
+@Length(11)
 public @interface Phone {
 
     String message() default ValidateUtil.PHONE_DEFAULT_MESSAGE;

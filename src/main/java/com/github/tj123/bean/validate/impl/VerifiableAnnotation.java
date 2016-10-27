@@ -88,7 +88,23 @@ public class VerifiableAnnotation {
             if (invoke == null) {
                 return null;
             }
-            return (String[])invoke;
+            if(invoke instanceof String[]){
+                return (String[])invoke;
+            }else if(invoke instanceof Integer[]){
+                Integer[] integerValues = (Integer[]) invoke;
+                List<String> list = new ArrayList<>();
+                for (Integer integerValue : integerValues) {
+                    list.add(String.valueOf(integerValue));
+                }
+                return list.toArray(new String[]{});
+            }else if(invoke instanceof int[]){
+                int[] integerValues = (int[]) invoke;
+                List<String> list = new ArrayList<>();
+                for (Integer integerValue : integerValues) {
+                    list.add(String.valueOf(integerValue));
+                }
+                return list.toArray(new String[]{});
+            }
         } catch (Exception e) {
         }
         return null;
@@ -249,7 +265,7 @@ public class VerifiableAnnotation {
         if(!isExist()) return;
         if (is(Email.class, Phone.class, Tel.class, QQ.class,Numeric.class)) {
             for (VerifiableAnnotation annotation : scanOn(ValidRegExp.class,
-                    InvalidRegExp.class)) {
+                    InvalidRegExp.class,MaxLength.class,MinLength.class,Length.class)) {
                 annotation.validate(field);
             }
         } else if (is(NotNull.class)) {
@@ -315,7 +331,16 @@ public class VerifiableAnnotation {
             if (field.isNotNull()) {
                 Length length = castTo(Length.class);
                 String stringValue = field.getStringValue(length.trim());
-                if (stringValue.length() != length.value()) {
+                int[] value = length.value();
+                boolean eq = false;
+                int len = stringValue.length();
+                for (int va : value) {
+                    if (len == va) {
+                        eq = true;
+                        break;
+                    }
+                }
+                if (!eq) {
                     throw new NotValidException(this, field);
                 }
             }
