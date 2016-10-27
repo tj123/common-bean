@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@ValidRegExp("\\d+")
+@ValidRegExp("\\[d\\x20\\-]+")
 public @interface Tel {
 
     String message() default ValidateUtil.TEL_DEFAULT_MESSAGE;
