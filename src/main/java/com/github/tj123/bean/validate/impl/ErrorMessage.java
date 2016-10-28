@@ -33,4 +33,21 @@ public class ErrorMessage {
                 ", message='" + message + '\'' +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof  ErrorMessage){
+            ErrorMessage errorMessage = (ErrorMessage) obj;
+            return message != null & message.equals(errorMessage.getMessage());
+        }
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        if(priority != null && message != null){
+            return message.length();
+        }
+        return super.hashCode();
+    }
 }

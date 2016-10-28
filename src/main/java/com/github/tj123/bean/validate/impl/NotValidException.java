@@ -146,25 +146,19 @@ public class NotValidException extends Exception {
     }
 
     /**
-     * 获取错误消息
+     * 获取错误消息 (数组)
      * @return
      */
     public Map<String,List<String>> errors(){
-        Errors errors = getErrors();
-        Map<String,List<String>> map = new HashMap<>();
-        for (Map.Entry<String, ArrayList<ErrorMessage>> entry : errors.entrySet()) {
-            Set<String> set = new HashSet<>();
-            for (ErrorMessage errorMessage : entry.getValue()) {
-                String message = errorMessage.getMessage();
-                if (!set.contains(message)) {
-                    set.add(message);
-                }
-            }
-            ArrayList<String> list = new ArrayList<>();
-            list.addAll(set);
-            map.put(entry.getKey(), list);
-        }
-        return map;
+        return errors.unique().sort().errors();
+    }
+
+    /**
+     * 获取错误消息 (单个优先级最高)
+     * @return
+     */
+    public Map<String,String> error(){
+        return errors.unique().sort().error();
     }
 
 }
