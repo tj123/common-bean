@@ -80,11 +80,16 @@
     </dependencies>
 
     <!-- maven部署仓库配置 -->
-  <distributionManagement>
+    <distributionManagement>
+        <!--<repository>-->
+        <!--<id>yuanben-release</id>-->
+        <!--<name>Yuanben Release</name>-->
+        <!--<url>http://192.168.1.5:8081/nexus/content/repositories/Yuanben-Release/</url>-->
+        <!--</repository>-->
         <repository>
-            <id>yuanben-release</id>
-            <name>Yuanben Release</name>
-            <url>http://192.168.1.5:8081/nexus/content/repositories/Yuanben-Release/</url>
+            <id>local</id>
+            <name>local</name>
+            <url>http://localhost:8081/nexus/content/repositories/local/</url>
         </repository>
     </distributionManagement>
 
